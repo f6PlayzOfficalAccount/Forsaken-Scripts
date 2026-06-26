@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+local EquippedEmotesValue = LocalPlayer:WaitForChild("PlayerData"):WaitForChild("Equipped"):WaitForChild("Emotes")
+local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+
+-- Adjust this value if it shifts the wrong way (-1 or 1)
+-- If it's hitting the slot *before* the intended one, keep it at 1. If it's hitting the slot *after*, change to -1.
+local OFFSET_CORRECTION = 1 
+
+-- Function to safely handle the index wrap-around between 1 and 8
+local function correctIndex(rawIndex)
+    local corrected = rawIndex - OFFSET_CORRECTION
+    if corrected < 1 then
+        return corrected + 8
+    elseif corrected > 8 then
+        return corrected - 8
+    end
+    return corrected
+end
+
+local Hook
+Hook = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if self == RemoteEvent and method == "FireServer" then
+        if args[1] == "EquipState" and type(args[2]) == "table" then
+            local emoteInstance = args[2][1]
+            local dataBuffer = args[2][2]
+            
+            if emoteInstance and typeof(dataBuffer) == "buffer" then
+                local rawString = buffer.tostring(dataBuffer)
+                local targetSlot = nil
+                
+                -- Unpack the double precision float
+                local success, slotNum = pcall(string.unpack, "<d", rawString, 2)
+                if success and slotNum then
+                    targetSlot = math.round(slotNum) + 1
+                end
+                
+                -- Fallback raw byte check
+                if not targetSlot then
+                    for i = 0, buffer.len(dataBuffer) - 1 do
+                        local bVal = buffer.readu8(dataBuffer, i)
+                        if bVal >= 0 and bVal <= 7 then
+                            targetSlot = bVal + 1
+                            break
+                        end
+                    end
+                end
+                
+                if targetSlot then
+                    -- Apply the offset correction to match the UI visual slice perfectly
+                    targetSlot = correctIndex(targetSlot)
+                    
+                    if targetSlot >= 1 and targetSlot <= 8 then
+                        local clickedModuleName = emoteInstance.Name
+                        
+                        -- Split current string layout
+                        local currentString = EquippedEmotesValue.Value
+                        local slots = string.split(currentString, "|")
+                        
+                        for i = #slots + 1, 8 do
+                            slots[i] = ""
+                        end
+                        
+                        -- Overwrite the exact corrected slot position
+                        slots[targetSlot] = clickedModuleName
+                        
+                        local newString = table.concat(slots, "|")
+                        EquippedEmotesValue.Value = newString
+                        
+                        print(string.format("[Fixed Slot %d] Replaced with Module Name: %s", targetSlot, clickedModuleName))
+                    end
+                end
+            end
+        end
+    end
+    
+    return Hook(self, ...)
+end)
+
+print("[Offset Fix Loaded] Slot indexing alignment active. Try equipping an emote now!")
