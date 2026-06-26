@@ -1,0 +1,186 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+
+local RemoteEvent = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("Network"):WaitForChild("RemoteEvent")
+local EmotesFolder = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Emotes")
+
+-- Configuration constants for #AuraMonster
+local ANIMATION_ID = "rbxassetid://134305747955119"
+local SOUND_ID = "rbxassetid://116137438955705"
+local SOUND_NAME = "AuraMonsterSFX"
+
+-- Track active tracks and visual assets locally so we can clean them up later
+local ActiveTrack = nil
+local ActiveAuraClone = nil
+local ActiveSound = nil
+local StateConnection = nil
+
+-- Forward declaration of stop function so connections can call it
+local stopAuraMonsterEffects
+
+-- Function to completely tear down active client-side components
+stopAuraMonsterEffects = function()
+    print("[Client Emote] Terminating #AuraMonster effects.")
+
+    if StateConnection then
+        StateConnection:Disconnect()
+        StateConnection = nil
+    end
+
+    if ActiveTrack then
+        ActiveTrack:Stop()
+        ActiveTrack = nil
+    end
+
+    if ActiveAuraClone then
+        ActiveAuraClone:Destroy()
+        ActiveAuraClone = nil
+    end
+
+    if ActiveSound then
+        ActiveSound:Stop()
+        ActiveSound:Destroy()
+        ActiveSound = nil
+    end
+
+    -- Thorough cleanup verification
+    local lingeringSound = RootPart and RootPart:FindFirstChild(SOUND_NAME)
+    if lingeringSound then
+        lingeringSound:Destroy()
+    end
+end
+
+-- Function to execute #AuraMonster client-side assets
+local function startAuraMonsterEffects()
+    if not RootPart or not Humanoid then return end
+    
+    -- Safety Check: If the sound already exists, we are already executing the emote
+    if RootPart:FindFirstChild(SOUND_NAME) or ActiveAuraClone then
+        print("[Client Emote] Safety triggered: Emote effects are already running!")
+        return
+    end
+
+    print("[Client Emote] Starting #AuraMonster visuals...")
+
+    -- 1. Create and Play Sound
+    ActiveSound = Instance.new("Sound")
+    ActiveSound.Name = SOUND_NAME
+    ActiveSound.SoundId = SOUND_ID
+    ActiveSound.Volume = 1
+    ActiveSound.Looped = true
+    ActiveSound.Parent = RootPart
+    ActiveSound:Play()
+
+    -- 2. Play Animation Track
+    local anim = Instance.new("Animation")
+    anim.AnimationId = ANIMATION_ID
+    ActiveTrack = Humanoid:LoadAnimation(anim)
+    ActiveTrack:Play()
+
+    -- 3. Clone and weld handles
+    local auraAsset = EmotesFolder:FindFirstChild("#AuraMonster") and EmotesFolder["#AuraMonster"]:FindFirstChild("AuraMonster")
+    if auraAsset then
+        ActiveAuraClone = auraAsset:Clone()
+        ActiveAuraClone.Parent = Character
+
+        -- Attach structural motor paths directly to the RootPart
+        if ActiveAuraClone:FindFirstChild("BIGAURA") and ActiveAuraClone.BIGAURA:FindFirstChild("VFXPartMotor") then
+            ActiveAuraClone.BIGAURA.VFXPartMotor.Part0 = RootPart
+        end
+        if ActiveAuraClone:FindFirstChild("StepPart1") and ActiveAuraClone.StepPart1:FindFirstChild("Step1Motor") then
+            ActiveAuraClone.StepPart1.Step1Motor.Part0 = RootPart
+        end
+        if ActiveAuraClone:FindFirstChild("StepPart2") and ActiveAuraClone.StepPart2:FindFirstChild("Step2Motor") then
+            ActiveAuraClone.StepPart2.Step2Motor.Part0 = RootPart
+        end
+
+        -- Turn on the emitters
+        if ActiveAuraClone:FindFirstChild("BIGAURA") then
+            for _, v in ipairs(ActiveAuraClone.BIGAURA:GetChildren()) do
+                if v:IsA("ParticleEmitter") then
+                    v.Enabled = true
+                end
+            end
+        end
+    else
+        warn("[Client Emote] Could not find AuraMonster model folder under assets!")
+    end
+
+    -- 4. Listen for Jump state to instantly stop the emote
+    StateConnection = Humanoid.StateChanged:Connect(function(_, newState)
+        if newState == Enum.HumanoidStateType.Jumping or newState == Enum.HumanoidStateType.Freefall then
+            print("[Client Emote] Jump/Fall detected! Stopping emote.")
+            
+            -- Tell the server we stopped playing the emote (mimicking the game's actual stop system)
+            local stopArgs = {
+                "StopEmote",
+                {
+                    buffer.fromstring("\003\t\000\000\000Animations"),
+                    buffer.fromstring("\003\004\000\000\000Wave") -- Default fallback stop string name
+                }
+            }
+            RemoteEvent:FireServer(unpack(stopArgs))
+            
+            -- Kill local visual effects
+            stopAuraMonsterEffects()
+        end
+    end)
+end
+
+-- Update character references when resetting/respawning
+local function setupCharacter(newChar)
+    Character = newChar
+    Humanoid = newChar:WaitForChild("Humanoid")
+    RootPart = newChar:WaitForChild("HumanoidRootPart")
+    stopAuraMonsterEffects() -- Clean up anything leftover from previous life
+end
+LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+-- Helper function to decode strings packed in the game's buffer format
+local function decodeStringFromBuffer(b)
+    if typeof(b) ~= "buffer" then return "" end
+    local rawString = buffer.tostring(b)
+    local header = string.byte(rawString, 1)
+    
+    if header == 3 then
+        local success, len = pcall(string.unpack, "<I4", rawString, 2)
+        if success and len then
+            return string.sub(rawString, 6, 5 + len)
+        end
+    end
+    return ""
+end
+
+-- Hook the RemoteEvent to handle incoming server commands
+local Hook
+Hook = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if self == RemoteEvent and method == "FireServer" then
+        local remoteAction = args[1]
+        
+        if remoteAction == "PlayEmote" and type(args[2]) == "table" then
+            local category = decodeStringFromBuffer(args[2][1])
+            local emoteName = decodeStringFromBuffer(args[2][2])
+            
+            -- If the payload matches the #AuraMonster token, trigger the visual suite
+            if emoteName == "#AuraMonster" then
+                task.spawn(startAuraMonsterEffects)
+            end
+            
+        elseif remoteAction == "StopEmote" then
+            -- Intercepts any manual stop call to cleanly wipe out running audio/visual instances
+            task.spawn(stopAuraMonsterEffects)
+        end
+    end
+    
+    return Hook(self, ...)
+end)
+
+print("[Systems Synced] Audio, Vfx handles, and Jump-To-Stop mechanisms online!")
