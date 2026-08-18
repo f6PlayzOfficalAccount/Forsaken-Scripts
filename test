@@ -3582,101 +3582,125 @@ function RayfieldLibrary:CreateWindow(Settings)
 	end
 	function Window:CreateLockedTab(Name, Image, Password, Ext)
 		local Tab = Window:CreateTab(Name, Image, Ext)
-		local Unlocked = false
-		local HiddenElements = {}
+		local TabPage = Tab.Container or Tab._Page or Tab.Elements or Tab.Page
 
-		-- Lock message banner at the top of the tab
-		local StatusParagraph = Tab:CreateParagraph({
-			Title = "🔒 Tab Locked",
-			Content = "Please enter the correct password below to unlock these features."
-		})
+		if not TabPage then return Tab end
 
-		-- Password Input field
-		local PasswordInput = Tab:CreateInput({
-			Name = "Password",
-			PlaceholderText = "Type password here...",
-			RemoveTextAfterFocusLost = false,
-			Callback = function(Text)
-				if Text == Password then
-					Unlocked = true
+		-- Main Overlay Frame covering the tab container
+		local LockOverlay = Instance.new("Frame")
+		LockOverlay.Name = "LockOverlay"
+		LockOverlay.Size = UDim2.new(1, 0, 1, 0)
+		LockOverlay.Position = UDim2.new(0, 0, 0, 0)
+		LockOverlay.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+		LockOverlay.BackgroundTransparency = 0.35 -- Semi-transparent
+		LockOverlay.ZIndex = 20
+		LockOverlay.Parent = TabPage
+
+		-- Center Layout
+		local UIListLayout = Instance.new("UIListLayout")
+		UIListLayout.Parent = LockOverlay
+		UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+		UIListLayout.Padding = UDim.new(0, 12)
+
+		-- Lock Icon Text
+		local LockIcon = Instance.new("TextLabel")
+		LockIcon.Name = "LockIcon"
+		LockIcon.Text = "🔒"
+		LockIcon.TextSize = 42
+		LockIcon.Size = UDim2.new(0, 50, 0, 50)
+		LockIcon.BackgroundTransparency = 1
+		LockIcon.Parent = LockOverlay
+
+		-- Title Header
+		LockLabel = Instance.new("TextLabel")
+		LockLabel.Name = "LockLabel"
+		LockLabel.Text = "Tab is Locked"
+		LockLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		LockLabel.TextSize = 18
+		LockLabel.Font = Enum.Font.GothamBold
+		LockLabel.Size = UDim2.new(0, 200, 0, 25)
+		LockLabel.BackgroundTransparency = 1
+		LockLabel.Parent = LockOverlay
+
+		-- Subtitle
+		local SubLabel = Instance.new("TextLabel")
+		SubLabel.Name = "SubLabel"
+		SubLabel.Text = "Enter password to access features"
+		SubLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+		SubLabel.TextSize = 13
+		SubLabel.Font = Enum.Font.Gotham
+		SubLabel.Size = UDim2.new(0, 250, 0, 20)
+		SubLabel.BackgroundTransparency = 1
+		SubLabel.Parent = LockOverlay
+
+		-- Password Input Field
+		local PasswordBox = Instance.new("TextBox")
+		PasswordBox.Name = "PasswordBox"
+		PasswordBox.Size = UDim2.new(0, 220, 0, 36)
+		PasswordBox.PlaceholderText = "Enter Password..."
+		PasswordBox.Text = ""
+		PasswordBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+		PasswordBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+		PasswordBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+		PasswordBox.BackgroundTransparency = 0.2
+		PasswordBox.Font = Enum.Font.Gotham
+		PasswordBox.TextSize = 14
+		PasswordBox.Parent = LockOverlay
+
+		local BoxCorner = Instance.new("UICorner")
+		BoxCorner.CornerRadius = UDim.new(0, 6)
+		BoxCorner.Parent = PasswordBox
+
+		local BoxStroke = Instance.new("UIStroke")
+		BoxStroke.Color = Color3.fromRGB(60, 60, 60)
+		BoxStroke.Thickness = 1
+		BoxStroke.Parent = PasswordBox
+
+		-- Verification Logic
+		PasswordBox.FocusLost:Connect(function(enterPressed)
+			if enterPressed then
+				if PasswordBox.Text == Password then
+					-- Fade out and destroy lock screen overlay
+					local TweenService = game:GetService("TweenService")
+					local tween = TweenService:Create(LockOverlay, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+						BackgroundTransparency = 1
+					})
 					
-					-- Hide the password prompt components
-					if StatusParagraph and StatusParagraph.Set then
-						StatusParagraph:Set({Title = "🔓 Unlocked", Content = "Access granted!"})
-					end
-
-					-- Show all the hidden elements that were added to this tab
-					for _, elementFrame in ipairs(HiddenElements) do
-						if typeof(elementFrame) == "Instance" then
-							elementFrame.Visible = true
-						elseif type(elementFrame) == "table" and elementFrame.Frame then
-							elementFrame.Frame.Visible = true
+					for _, child in ipairs(LockOverlay:GetChildren()) do
+						if child:IsA("TextLabel") or child:IsA("TextBox") then
+							TweenService:Create(child, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
 						end
 					end
 
+					tween:Play()
+					tween.Completed:Connect(function()
+						LockOverlay:Destroy()
+					end)
+
 					Rayfield:Notify({
-						Title = "Access Granted",
+						Title = "Unlocked",
 						Content = "Tab unlocked successfully!",
 						Duration = 3
 					})
 				else
+					PasswordBox.Text = ""
+					BoxStroke.Color = Color3.fromRGB(255, 50, 50)
+					
 					Rayfield:Notify({
 						Title = "Access Denied",
-						Content = "Incorrect password. Try again!",
-						Duration = 3
+						Content = "Incorrect password!",
+						Duration = 2
 					})
+					
+					task.delay(1.5, function()
+						if BoxStroke then
+							BoxStroke.Color = Color3.fromRGB(60, 60, 60)
+						end
+					end)
 				end
 			end
-		})
-
-		-- Hook into Tab's element creation functions so elements are hidden on spawn until unlocked
-		local originalCreateButton = Tab.CreateButton
-		function Tab:CreateButton(ElementSettings)
-			local btn = originalCreateButton(self, ElementSettings)
-			if not Unlocked then
-				if btn and btn.Frame then
-					btn.Frame.Visible = false
-					table.insert(HiddenElements, btn.Frame)
-				end
-			end
-			return btn
-		end
-
-		local originalCreateToggle = Tab.CreateToggle
-		function Tab:CreateToggle(ElementSettings)
-			local tgl = originalCreateToggle(self, ElementSettings)
-			if not Unlocked then
-				if tgl and tgl.Frame then
-					tgl.Frame.Visible = false
-					table.insert(HiddenElements, tgl.Frame)
-				end
-			end
-			return tgl
-		end
-
-		local originalCreateSlider = Tab.CreateSlider
-		function Tab:CreateSlider(ElementSettings)
-			local sld = originalCreateSlider(self, ElementSettings)
-			if not Unlocked then
-				if sld and sld.Frame then
-					sld.Frame.Visible = false
-					table.insert(HiddenElements, sld.Frame)
-				end
-			end
-			return sld
-		end
-
-		local originalCreateDropdown = Tab.CreateDropdown
-		function Tab:CreateDropdown(ElementSettings)
-			local drp = originalCreateDropdown(self, ElementSettings)
-			if not Unlocked then
-				if drp and drp.Frame then
-					drp.Frame.Visible = false
-					table.insert(HiddenElements, drp.Frame)
-				end
-			end
-			return drp
-		end
+		end)
 
 		return Tab
 	end
@@ -4216,18 +4240,28 @@ end
 --if not useStudio then
 --	task.spawn(loadWithTimeout, "https://raw.githubusercontent.com/SiriusSoftwareLtd/Sirius/refs/heads/request/boost.lua")
 --end
-
 task.delay(4, function()
-	RayfieldLibrary.LoadConfiguration()
-	if Main:FindFirstChild('Notice') and Main.Notice.Visible then
-		TweenService:Create(Main.Notice, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 100, 0, 25), Position = UDim2.new(0.5, 0, 0, -100), BackgroundTransparency = 1}):Play()
-		TweenService:Create(Main.Notice.Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+    RayfieldLibrary.LoadConfiguration()
+    
+    local NoticeFrame = Main and Main:FindFirstChild('Notice')
+    if NoticeFrame and NoticeFrame.Visible then
+        TweenService:Create(NoticeFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {
+            Size = UDim2.new(0, 100, 0, 25), 
+            Position = UDim2.new(0.5, 0, 0, -100), 
+            BackgroundTransparency = 1
+        }):Play()
 
-		task.wait(0.5)
-		Main.Notice.Visible = false
-	end
+        local Title = NoticeFrame:FindFirstChild('Title')
+        if Title then
+            TweenService:Create(Title, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+        end
+
+        task.wait(0.5)
+        if NoticeFrame then
+            NoticeFrame.Visible = false
+        end
+    end
 end)
-
 return RayfieldLibrary
 
 --[[
