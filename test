@@ -1,5 +1,5 @@
 --[[
-
+-- tab
 	Rayfield Interface Suite
 	by Sirius
 
@@ -1298,7 +1298,6 @@ function RayfieldLibrary:Notify(data) -- action e.g open messages
 		newNotification:Destroy()
 	end)
 end
-
 local function openSearch()
 	searchOpen = true
 
@@ -3581,6 +3580,57 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		return Tab
 	end
+	function Window:CreateLockedTab(Name, Image, Password, Ext)
+		local Tab = Window:CreateTab(Name, Image, Ext)
+		local IsUnlocked = false
+		
+		-- Get the internal container frame where tab elements are parented
+		local TabPage = Tab.Elements or Tab._Page or Tab.Container or Tab.Page
+
+		-- Add password unlock UI inside the tab
+		Tab:CreateInput({
+			Name = "Enter Password",
+			PlaceholderText = "Type password to unlock...",
+			RemoveTextAfterFocusLost = false,
+			Callback = function(Text)
+				if Text == Password then
+					IsUnlocked = true
+
+					-- Make all hidden elements inside this tab visible
+					if TabPage then
+						for _, child in ipairs(TabPage:GetChildren()) do
+							if child:IsA("GuiObject") then
+								child.Visible = true
+							end
+						end
+					end
+
+					Rayfield:Notify({
+						Title = "Unlocked",
+						Content = "Tab content is now accessible!",
+						Duration = 3
+					})
+				else
+					Rayfield:Notify({
+						Title = "Access Denied",
+						Content = "Incorrect password!",
+						Duration = 3
+					})
+				end
+			end
+		})
+
+		-- Automatically hide any elements added to this tab until unlocked
+		if TabPage then
+			TabPage.ChildAdded:Connect(function(child)
+				if not IsUnlocked then
+					child.Visible = false
+				end
+			end)
+		end
+
+		return Tab
+	end
 
 	Elements.Visible = true
 
@@ -4130,3 +4180,17 @@ task.delay(4, function()
 end)
 
 return RayfieldLibrary
+
+
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/f6PlayzOfficalAccount/Forsaken-Scripts/refs/heads/main/test'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Rayfield Example Window",
+   LoadingTitle = "Interface Suite",
+   LoadingSubtitle = "by Sirius",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, 
+      FileName = "Big Hub"
+   }
+})
