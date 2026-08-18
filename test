@@ -3582,51 +3582,100 @@ function RayfieldLibrary:CreateWindow(Settings)
 	end
 	function Window:CreateLockedTab(Name, Image, Password, Ext)
 		local Tab = Window:CreateTab(Name, Image, Ext)
-		local IsUnlocked = false
-		
-		-- Get the internal container frame where tab elements are parented
-		local TabPage = Tab.Elements or Tab._Page or Tab.Container or Tab.Page
+		local Unlocked = false
+		local HiddenElements = {}
 
-		-- Add password unlock UI inside the tab
-		Tab:CreateInput({
-			Name = "Enter Password",
-			PlaceholderText = "Type password to unlock...",
+		-- Lock message banner at the top of the tab
+		local StatusParagraph = Tab:CreateParagraph({
+			Title = "🔒 Tab Locked",
+			Content = "Please enter the correct password below to unlock these features."
+		})
+
+		-- Password Input field
+		local PasswordInput = Tab:CreateInput({
+			Name = "Password",
+			PlaceholderText = "Type password here...",
 			RemoveTextAfterFocusLost = false,
 			Callback = function(Text)
 				if Text == Password then
-					IsUnlocked = true
+					Unlocked = true
+					
+					-- Hide the password prompt components
+					if StatusParagraph and StatusParagraph.Set then
+						StatusParagraph:Set({Title = "🔓 Unlocked", Content = "Access granted!"})
+					end
 
-					-- Make all hidden elements inside this tab visible
-					if TabPage then
-						for _, child in ipairs(TabPage:GetChildren()) do
-							if child:IsA("GuiObject") then
-								child.Visible = true
-							end
+					-- Show all the hidden elements that were added to this tab
+					for _, elementFrame in ipairs(HiddenElements) do
+						if typeof(elementFrame) == "Instance" then
+							elementFrame.Visible = true
+						elseif type(elementFrame) == "table" and elementFrame.Frame then
+							elementFrame.Frame.Visible = true
 						end
 					end
 
 					Rayfield:Notify({
-						Title = "Unlocked",
-						Content = "Tab content is now accessible!",
+						Title = "Access Granted",
+						Content = "Tab unlocked successfully!",
 						Duration = 3
 					})
 				else
 					Rayfield:Notify({
 						Title = "Access Denied",
-						Content = "Incorrect password!",
+						Content = "Incorrect password. Try again!",
 						Duration = 3
 					})
 				end
 			end
 		})
 
-		-- Automatically hide any elements added to this tab until unlocked
-		if TabPage then
-			TabPage.ChildAdded:Connect(function(child)
-				if not IsUnlocked then
-					child.Visible = false
+		-- Hook into Tab's element creation functions so elements are hidden on spawn until unlocked
+		local originalCreateButton = Tab.CreateButton
+		function Tab:CreateButton(ElementSettings)
+			local btn = originalCreateButton(self, ElementSettings)
+			if not Unlocked then
+				if btn and btn.Frame then
+					btn.Frame.Visible = false
+					table.insert(HiddenElements, btn.Frame)
 				end
-			end)
+			end
+			return btn
+		end
+
+		local originalCreateToggle = Tab.CreateToggle
+		function Tab:CreateToggle(ElementSettings)
+			local tgl = originalCreateToggle(self, ElementSettings)
+			if not Unlocked then
+				if tgl and tgl.Frame then
+					tgl.Frame.Visible = false
+					table.insert(HiddenElements, tgl.Frame)
+				end
+			end
+			return tgl
+		end
+
+		local originalCreateSlider = Tab.CreateSlider
+		function Tab:CreateSlider(ElementSettings)
+			local sld = originalCreateSlider(self, ElementSettings)
+			if not Unlocked then
+				if sld and sld.Frame then
+					sld.Frame.Visible = false
+					table.insert(HiddenElements, sld.Frame)
+				end
+			end
+			return sld
+		end
+
+		local originalCreateDropdown = Tab.CreateDropdown
+		function Tab:CreateDropdown(ElementSettings)
+			local drp = originalCreateDropdown(self, ElementSettings)
+			if not Unlocked then
+				if drp and drp.Frame then
+					drp.Frame.Visible = false
+					table.insert(HiddenElements, drp.Frame)
+				end
+			end
+			return drp
 		end
 
 		return Tab
