@@ -1,0 +1,1720 @@
+--// 1. LOCAL TRACKING STATE VIA REPLICATEDFIRST OBJECT REFS
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local TargetFolder = ReplicatedFirst:FindFirstChild("F6HubFolder")
+
+-- If it exists from an old execution, destroy it to cleanly alert previous loops
+if TargetFolder then
+    TargetFolder:Destroy()
+    task.wait(0.1) -- brief pause for engine to process termination
+end
+
+-- Create a fresh session anchor instance
+local SessionContainer = Instance.new("Folder")
+SessionContainer.Name = "F6HubFolder"
+SessionContainer.Parent = ReplicatedFirst
+
+local IsActiveValue = Instance.new("BoolValue")
+IsActiveValue.Name = "IsScriptActive"
+IsActiveValue.Value = true
+IsActiveValue.Parent = SessionContainer
+
+-- Variable checks are kept strictly to local script references for extreme speed
+local LocalActiveRef = IsActiveValue
+
+--// Rayfield UI Loader
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local NewEmotes = "https://raw.githubusercontent.com/f6PlayzOfficalAccount/Forsaken-Scripts/refs/heads/main/EmotesForsaken?token=GHSAT0AAAAAAD7BIYQW4IWRV7HIJ2DMO56I2RI2KFQ"
+
+-- Keep track of default lighting settings to restore them completely
+local DefaultClockTime = Lighting.ClockTime
+local DefaultBrightness = Lighting.Brightness
+
+--// Window
+local Window = Rayfield:CreateWindow({
+	Name = "Forsaken Emote UI",
+	LoadingTitle = "loading please wait..",
+	LoadingSubtitle = "by f6 himself",
+	ConfigurationSaving = { Enabled = false },
+	OnDestroy = function()
+		-- Rayfield fallback if closed via external binds
+		if LocalActiveRef then LocalActiveRef.Value = false end
+	end
+})
+
+-- Forward declaration of global reset logic so buttons can invoke it cleanly
+local function localReset()
+    local char = player.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local animScript = char:FindFirstChild("Animate")
+        if animScript then 
+            animScript.Disabled = true
+            animScript.Disabled = false 
+        end
+        if hum then
+            for _, track in pairs(hum:GetPlayingAnimationTracks()) do
+                track:Stop(0.1)
+            end
+        end
+    end
+end
+
+-- Global cleanup sequence for exiting the script completely
+local function totalCleanup()
+    if LocalActiveRef then LocalActiveRef.Value = false end
+    
+    -- Stop custom loops
+    localReset()
+    
+    -- Restore Environment Defaults
+    Lighting.ClockTime = DefaultClockTime
+    Lighting.Brightness = DefaultBrightness
+    if TextChatService.ChatWindowConfiguration then
+        TextChatService.ChatWindowConfiguration.Enabled = true
+    end
+    
+    -- Fire external custom reset setups if they exist
+    pcall(function()
+        if _G.ForsakenReset then 
+            _G.ForsakenReset() 
+        end
+    end)
+end
+
+--// Main Tab
+local MainTab = Window:CreateTab("Main", 138518322199012)
+
+MainTab:CreateSection("Emote Script Misc")
+
+MainTab:CreateButton({
+    Name = "Delete Emote UI",
+    Callback = function()
+        local targetUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("XenoGui")
+        if targetUI then
+            Rayfield:Notify({
+                Title = "Deleting...",
+                Content = "Please wait",
+                Duration = 2,
+                Image = 91063006683191,
+            })
+            targetUI:Destroy()
+        else
+            Rayfield:Notify({
+                Title = "Uhh where ui dumbo",
+                Content = "read dumbo theres a reason why its call delete BUT NOTHING TO DELETE HEREEEE",
+                Duration = 2,
+                Image = 89202472975367,
+            })
+        end
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Stop Anims & Clear Sounds",
+    Callback = function()
+        localReset()
+        local character = player.Character
+        if character then
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                for _, child in pairs(rootPart:GetChildren()) do
+                    if child:IsA("Sound") then
+                        child:Destroy()
+                    end
+                end
+            end
+
+            Rayfield:Notify({
+                Title = "Cleaned!",
+                Content = "Animations stopped and sounds cleared.",
+                Duration = 2,
+                Image = 4483345998,
+            })
+            
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                camera.CameraSubject = humanoid
+                camera.CameraType = Enum.CameraType.Custom
+            end
+        end
+    end
+})
+
+MainTab:CreateParagraph({
+	Title = "Fot Stop Anim and sound",
+	Content = "This stops all animations and only the emote sound just incase you forgot to stop it before deleting the ui"
+})
+
+MainTab:CreateSection("Old UI")
+
+MainTab:CreateParagraph({
+	Title = "About this",
+	Content = "This is the old forsaken emote script UI"
+})
+
+MainTab:CreateButton({
+    Name = "Load Old UI",
+    Callback = function()
+        local currentUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("XenoGui")
+        if currentUI then
+            Rayfield:Notify({
+                Title = "Bug",
+                Content = "Please delete the main emote script to reload the script",
+                Duration = 2,
+                Image = 10309798975,
+            })
+        else
+            loadstring(game:HttpGet("https://pastebin.com/raw/jJZxEaEv"))()
+        end
+    end
+})
+
+MainTab:CreateSection("New UI")
+
+MainTab:CreateParagraph({
+	Title = "About this",
+	Content = "This is for the New UI forsaken emote script"
+})
+
+MainTab:CreateButton({
+    Name = "Load New UI",
+    Callback = function()
+        local currentUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("XenoGui")
+        if currentUI then
+            Rayfield:Notify({
+                Title = "Bug",
+                Content = "Please delete the main emote script to reload the script",
+                Duration = 2,
+                Image = 10309798975,
+            })
+        else
+            loadstring(game:HttpGet(NewEmotes))()
+        end
+    end
+})
+
+MainTab:CreateSection("UI Controls")
+
+MainTab:CreateButton({
+	Name = "Close UI & Stop Scripts",
+	Callback = function()
+		totalCleanup()
+		Rayfield:Destroy()
+	end
+})
+
+--------------------------------------------------
+local ExistingChecker1 = workspace:FindFirstChild("ChatEnabled")
+if ExistingChecker1 then
+	ExistingChecker1:Destroy()
+end
+
+local ChatCheck = Instance.new("BoolValue")
+ChatCheck.Name = "ChatEnabled"
+ChatCheck.Value = false
+ChatCheck.Parent = workspace
+
+local MiscTab = Window:CreateTab("Misc", 86407971397188)
+MiscTab:CreateToggle({
+    Name = "Show Chat Window",
+    CurrentValue = false,    
+    Flag = "ChatToggle",
+    Callback = function(Value)
+        pcall(function()
+            ChatCheck.Value = Value
+            if not Value and TextChatService.ChatWindowConfiguration then
+                TextChatService.ChatWindowConfiguration.Enabled = true
+            end
+            task.spawn(function()
+                while Value and ChatCheck and ChatCheck.Value == true and LocalActiveRef and LocalActiveRef.Value do
+                    if TextChatService.ChatWindowConfiguration then
+                        TextChatService.ChatWindowConfiguration.Enabled = true
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        end)
+    end
+})
+
+local ExistingChecker = workspace:FindFirstChild("DayChecker")
+if ExistingChecker then
+	ExistingChecker:Destroy()
+end
+
+local DayChecker = Instance.new("BoolValue")
+DayChecker.Name = "DayChecker"
+DayChecker.Value = false
+DayChecker.Parent = workspace
+
+MiscTab:CreateToggle({
+   Name = "Enable Day",
+   CurrentValue = false,
+   Flag = "DayToggleFlag",
+   Callback = function(Value)
+      if DayChecker then
+          DayChecker.Value = Value
+      end 
+
+      if Value then
+         task.spawn(function()
+            while DayChecker and DayChecker.Value == true and LocalActiveRef and LocalActiveRef.Value do
+               Lighting.ClockTime = 14
+               Lighting.Brightness = 3
+               task.wait(0.1)
+            end
+         end)
+      else
+         -- Instantly restore default day cycle values when toggle is turned off
+         Lighting.ClockTime = DefaultClockTime
+         Lighting.Brightness = DefaultBrightness
+      end
+   end,
+})
+
+local NONEtab = Window:CreateTab("Cool Stuff", "sparkles")
+
+NONEtab:CreateButton({
+    Name = "Set cam None",
+    Callback = function()
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                camera.CameraSubject = humanoid
+                camera.CameraType = Enum.CameraType.Custom
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "Cleaned!",
+            Content = "Animations stopped and sounds cleared.",
+            Duration = 2,
+            Image = 4483345998,
+        })
+    end
+})
+
+NONEtab:CreateButton({
+    Name = "Set cam Head",
+    Callback = function()
+        local char = player.Character
+        if char then
+            local head = char:FindFirstChild("Head")
+            if head then
+                camera.CameraSubject = head
+                camera.CameraType = Enum.CameraType.Custom
+            end
+        end
+    end
+})
+--[[
+NONEtab:CreateSection("Emotes (USE EMOTES ONLY IF U OWN IT AND EQUIPPED IT)")
+
+local EmoteFolder = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Emotes")
+local Remote = ReplicatedStorage.Modules.Network.Network.RemoteEvent
+
+local function encode(str)
+	return buffer.fromstring(
+		string.char(3) ..
+		string.pack("<I4", #str) ..
+		str
+	)
+end
+
+local function playEmote(name)
+	Remote:FireServer(
+		"PlayEmote",
+		{
+			encode("Animations"),
+			encode(name)
+		}
+	)
+end
+
+NONEtab:CreateButton({
+	Name = "STOP",
+	Callback = function()
+		Remote:FireServer(
+		"StopEmote",
+		{
+			encode("Animations"),
+			encode("Wave")
+		})
+	end
+})
+
+for _, module in pairs(EmoteFolder:GetChildren()) do
+	if module:IsA("ModuleScript") then
+		local success, data = pcall(require, module)
+
+		if success and type(data) == "table" then
+			local displayName = data.DisplayName
+			local Discr = data.Description
+			local Render = data.RenderImage
+			local FUCTc = module.Name
+
+			NONEtab:CreateButton({
+				Name = displayName,
+				Callback = function()
+					playEmote(FUCTc)
+					Rayfield:Notify({
+						Title = "Playing Emote",
+						Content = "Plying...",
+						Duration = 2,
+						Image = Render,
+					})
+				end
+			})
+			NONEtab:CreateParagraph({
+				Title = displayName,
+				Content = Discr
+			})
+		else
+			warn("Failed to load:", module.Name)
+		end
+	end
+end
+]]
+--================================================--
+-- ANIMATION TAB SECTION (FIXED & RESETTABLE)
+--================================================--
+local AnimTab = Window:CreateTab("Animations", 108472274328332)
+AnimTab:CreateSection("Animation Switcher")
+
+local Animations = {
+	["Normal"] = nil,
+	["Noli (MS 3-4)"] = { Idle = "rbxassetid://110933164243478", Walk = "rbxassetid://132550421221296", Run = "rbxassetid://105441420067903" },
+	["KIKIKI (fire jason)"] = { Idle = "rbxassetid://111915677103210", Walk = "rbxassetid://92337314320765", Run = "rbxassetid://86125526846131" },
+    ["REA 51"] = { Idle = "rbxassetid://125750544 ", Walk = "rbxassetid://252557606", Run = "rbxassetid://252557606" },
+	["John Toe"] = { Idle = "rbxassetid://105880087711722", Walk = "rbxassetid://81193817424328", Run = "rbxassetid://132653655520682" },
+	["Rock Toe"] = { Idle = "rbxassetid://82559085571201", Walk = "rbxassetid://88665566861294", Run = "rbxassetid://122746181525119" },
+	["CoolKidd"] = { Idle = "rbxassetid://18885903667", Walk = "rbxassetid://18885906143", Run = "rbxassetid://96571077893813" },
+	["1x"] = { Idle = "rbxassetid://138754221537146", Walk = "rbxassetid://109130982296927", Run = "rbxassetid://106485518413331" },
+	["Dragon Fruit"] = { Idle = "rbxassetid://103258687488309", Walk = "rbxassetid://76148869563038", Run = "rbxassetid://130006476298106" },
+	["Im porpol"] = { Idle = "rbxassetid://83465205704188", Walk = "rbxassetid://109700476007435", Run = "rbxassetid://117451341682452" },
+	["Dog Only"] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://109671225388655" },
+	["Special G666 RUN (Guess 666 only) "] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://97155057793046" },
+	["Narrator"] = { Idle = "rbxassetid://129891807903845", Walk = "rbxassetid://114152086302685", Run = "rbxassetid://97759042686395" },
+	["BrawlBattler"] = { Idle = "rbxassetid://96173779255396", Walk = "rbxassetid://96194626828153", Run = "rbxassetid://96194626828153" },
+	["Lovecore"] = { Idle = "rbxassetid://94203802413304", Walk = "rbxassetid://90708761928557", Run = "rbxassetid://117355450522769" },
+	["Grollusiam"] = { Idle = "rbxassetid://138798332857092", Walk = "rbxassetid://125121915550057", Run = "rbxassetid://119868176210393" },
+	["The Slick Dud - Original ANIMS"] = { Idle = "rbxassetid://96272036780957", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://111367557693514" },
+	["Digital Rider"] = { Idle = "rbxassetid://83139195403190", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://113749369268942" },
+	["Survivor OG Anims"] = { Idle = "rbxassetid://131082534135875", Walk = "rbxassetid://108018357044094", Run = "rbxassetid://136252471123500" },
+	["Drifter Slaher"] = { Idle = "rbxassetid://137140789784322", Walk = "rbxassetid://100758925086750", Run = "rbxassetid://83866654755739" },
+	["Who shall i Stalk today"] = { Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://108287960442206", Run = "rbxassetid://109671225388655" },
+	["WHY IS THAT TV WALKING-"] = { Idle = "rbxassetid://85728609580979", Walk = "rbxassetid://95769893872782", Run = "rbxassetid://95769893872782" },
+	["AZURE"] = { Idle = "rbxassetid://83610109883783", Walk = "rbxassetid://106875719128301", Run = "rbxassetid://94531473885454" },
+    ["Nos"] = { Idle = "rbxassetid://70639889347646", Walk = "rbxassetid://125580704385106", Run = "rbxassetid://82983377044738" },
+	["The ADMIN?!"] = { Idle = "rbxassetid://119473916907837", Walk = "rbxassetid://89706191899405", Run = "rbxassetid://124250212996049" },
+    ["Bluudude"] = {Idle = "rbxassetid://96013907659083", Walk = "rbxassetid://111019416323211", Run = "rbxassetid://101711406381367"},
+    ["Stalker"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://95469909855529", Run = "rbxassetid://108287960442206"},
+["Stalker Enraged"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://109671225388655", Run = "rbxassetid://109671225388655"},
+
+}
+
+local currentPack = "Normal"
+local activeTracks = {}
+local movementLoop = nil
+
+-- Modifying internal localReset to explicitly wipe references out of memory
+local function cleanAndStopTracks()
+    if movementLoop then movementLoop:Disconnect() movementLoop = nil end
+    for _, track in pairs(activeTracks) do pcall(function() track:Stop(0.1) track:Destroy() end) end
+    table.clear(activeTracks)
+    localReset()
+end
+
+local function applyPack(char)
+    cleanAndStopTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+    local humanoid = char:WaitForChild("Humanoid")
+    local root = char:WaitForChild("HumanoidRootPart")
+    local animate = char:FindFirstChild("Animate")
+
+    if currentPack == "Normal" then return end
+    if animate then animate.Disabled = true end
+
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+    local pack = Animations[currentPack]
+    
+    for state, id in pairs(pack) do
+        local anim = Instance.new("Animation")
+        anim.AnimationId = id
+        local track = animator:LoadAnimation(anim)
+        track.Priority = Enum.AnimationPriority.Action
+        track.Looped = true
+        activeTracks[state] = track
+    end
+
+    local currentState = nil
+    movementLoop = RunService.Heartbeat:Connect(function()
+        if not LocalActiveRef or not LocalActiveRef.Value or not char.Parent or humanoid.Health <= 0 then 
+            if movementLoop then movementLoop:Disconnect() end
+            return 
+        end
+        local speed = root.AssemblyLinearVelocity.Magnitude
+        local state = speed < 1 and "Idle" or (speed < 20 and "Walk" or "Run")
+
+        if currentState ~= state then
+            currentState = state
+            for n, t in pairs(activeTracks) do if n ~= state then t:Stop(0.1) end end
+            if activeTracks[state] then activeTracks[state]:Play(0.15) end
+        end
+    end)
+end
+
+local options = {}
+for name in pairs(Animations) do table.insert(options, name) end
+table.sort(options)
+
+AnimTab:CreateDropdown({
+    Name = "Select Animation Pack",
+    Options = options,
+    CurrentOption = {"Normal"},
+    Flag = "AnimSelect",
+    Callback = function(option)
+        currentPack = option[1]
+        if player.Character then applyPack(player.Character) end
+    end
+})
+
+AnimTab:CreateButton({
+    Name = "Reset to Normal",
+    Callback = function()
+        currentPack = "Normal"
+        cleanAndStopTracks()
+        Rayfield:Notify({Title = "Reset", Content = "Restored default animations", Duration = 2})
+    end
+})
+
+player.CharacterAdded:Connect(function(char)
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+    task.wait(1)
+    if currentPack ~= "Normal" then applyPack(char) end
+end)
+
+-- ==========================================
+-- FILE CREATION, DOWNLOADS & CONFIGURATION
+-- ==========================================
+local base = "f6'sNiceHub"
+local assets = base .. "/Assets"
+local emotesFolder = assets .. "/Emotes"
+local lmsFolder = assets .. "/LMS"
+
+if not isfolder(base) then makefolder(base) end
+if not isfolder(assets) then makefolder(assets) end
+if not isfolder(emotesFolder) then makefolder(emotesFolder) end
+if not isfolder(lmsFolder) then makefolder(lmsFolder) end
+
+local EmoteList = {
+    ["rbxassetid://93139857397485"] = {
+        ButtonType = "Dropbox",
+        ToggleName = "OLD Cal Girls Selection",
+        Options = {
+            { Name = "Default Audio", Type = "Roblox", TargetId = "rbxassetid://93139857397485" },
+            { Name = "OLD Cal Girls", Type = "Roblox", TargetId = "rbxassetid://96677274748910" }
+        }
+    },
+    ["rbxassetid://82873867536518"] = {
+        ButtonType = "Dropbox",
+        ToggleName = "Retry Now Mix Selection",
+        Options = {
+            { Name = "Default Audio", Type = "Roblox", TargetId = "rbxassetid://82873867536518" },
+            { Name = "Retry Now Old PT1", Type = "Local", FileName = "RetryNowPT1.ogg", URL = "https://static.wikia.nocookie.net/forsaken2024/images/9/97/RetryNowStartOld.ogg/revision/latest?cb=20260310054631" }
+        }
+    },
+    ["rbxassetid://87794061271458"] = {
+        ButtonType = "Toggle",
+        ToggleName = "Brick Battler Custom Audio",
+        Type = "Local",
+        FileName = "BrickBattler.mp3",
+        URL = "https://static.wikia.nocookie.net/forsaken2024/images/4/49/BrickbattlerLyrics.mp3/revision/latest?cb=20250608150452"
+    },
+    ["rbxassetid://122394094782505"] = {
+        ButtonType = "Toggle",
+        ToggleName = "Retry Now Old PT2",
+        Type = "Local",
+        FileName = "RetryNowPT2.ogg",
+        URL = "https://static.wikia.nocookie.net/forsaken2024/images/a/aa/RetryNowLoopOld.ogg/revision/latest?cb=20260310054420"
+    }
+}
+
+local LMSList = {
+    ["rbxassetid://88279626466849"] = {
+        ButtonType = "Dropbox",
+        ToggleName = "G666 VS Noob Style Selection",
+        Options = {
+            { Name = "Default Audio", Type = "Roblox", TargetId = "rbxassetid://88279626466849" },
+            { Name = "G666VsNoobOLD", Type = "Local", FileName = "G666_VS_Noob_Old.mp3", URL = "https://github.com/f6PlayzOfficalAccount/Forsaken/raw/refs/heads/main/NoobvsGuest666" }
+        }
+    },
+    ["rbxassetid://71057332615441"] = {
+        ButtonType = "Dropbox",
+        ToggleName = "Normal LMS Chnages",
+        Options = {
+            { Name = "Default Audio", Type = "Roblox", TargetId = "rbxassetid://71057332615441" },
+            { Name = "The Prowler", Type = "Local", FileName = "MILES_IS_THAT_U", URL = "https://github.com/f6PlayzOfficalAccount/Forsaken/raw/refs/heads/main/spiderman-into-the-spider-verse-the-prowler-s-theme-skysoundcc-6rcxvezy_ksDzIuSw.mp3"},
+            { Name = "DrifterSlasherLMS", Type = "Roblox", TargetId = "rbxassetid://116564900353263" },
+        }
+    }
+}
+
+for originalId, config in pairs(EmoteList) do
+    if config.ButtonType == "Toggle" and config.Type == "Local" then
+        local filePath = emotesFolder .. "/" .. config.FileName
+        if not isfile(filePath) then
+            local success, data = pcall(function() return game:HttpGet(config.URL) end)
+            if success and data then writefile(filePath, data) end
+        end
+    elseif config.ButtonType == "Dropbox" then
+        for _, opt in ipairs(config.Options) do
+            if opt.Type == "Local" and opt.FileName then
+                local filePath = emotesFolder .. "/" .. opt.FileName
+                if not isfile(filePath) then
+                    local success, data = pcall(function() return game:HttpGet(opt.URL) end)
+                    if success and data then writefile(filePath, data) end
+                end
+            end
+        end
+    end
+end
+
+for originalId, config in pairs(LMSList) do
+    if config.ButtonType == "Dropbox" then
+        for _, opt in ipairs(config.Options) do
+            if opt.Type == "Local" and opt.FileName then
+                local filePath = lmsFolder .. "/" .. opt.FileName
+                if not isfile(filePath) then
+                    local success, data = pcall(function() return game:HttpGet(opt.URL) end)
+                    if success and data then writefile(filePath, data) end
+                end
+            end
+        end
+    end
+end
+
+local getasset = getcustomasset or getsynasset
+
+local CustomTab = Window:CreateTab("Custom Emote Music", "Music") 
+CustomTab:CreateParagraph({
+    Title = "Custom emote music",
+    Content = "(DC)- Change or toggle your custom emote tracks via selectors and switches below."
+})
+CustomTab:CreateSection("Emote Sound Controls")
+
+local EmoteRuntimeRegistry = {}
+
+for originalId, config in pairs(EmoteList) do
+    if config.ButtonType == "Toggle" then
+        EmoteRuntimeRegistry[originalId] = { Mode = "Toggle", Active = false, Data = config }
+        CustomTab:CreateToggle({
+            Name = config.ToggleName,
+            CurrentValue = false,
+            Callback = function(Value)
+                if EmoteRuntimeRegistry[originalId] then EmoteRuntimeRegistry[originalId].Active = Value end
+            end
+        })
+    elseif config.ButtonType == "Dropbox" then
+        EmoteRuntimeRegistry[originalId] = { Mode = "Dropbox", SelectedData = config.Options[1] }
+        local dropdownDisplayNames = {}
+        for _, opt in ipairs(config.Options) do table.insert(dropdownDisplayNames, opt.Name) end
+        
+        CustomTab:CreateDropdown({
+            Name = config.ToggleName,
+            Options = dropdownDisplayNames,
+            CurrentOption = {dropdownDisplayNames[1]},
+            Callback = function(SelectedOption)
+                local choice = SelectedOption[1]
+                for _, opt in ipairs(config.Options) do
+                    if opt.Name == choice then
+                        if EmoteRuntimeRegistry[originalId] then EmoteRuntimeRegistry[originalId].SelectedData = opt end
+                        break
+                    end
+                end
+            end
+        })
+    end
+end
+
+task.spawn(function()
+    while LocalActiveRef and LocalActiveRef.Parent and LocalActiveRef.Value do
+        task.wait(0.3)
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local emote = hrp and hrp:FindFirstChild("PlayerEmoteSFX")
+
+        if emote and emote:IsA("Sound") then
+            local activeRuntime = EmoteRuntimeRegistry[emote.SoundId]
+            if activeRuntime then
+                local finalAsset = nil
+                if activeRuntime.Mode == "Dropbox" then
+                    local selectedData = activeRuntime.SelectedData
+                    if selectedData.Type == "Roblox" then
+                        finalAsset = selectedData.TargetId
+                    elseif selectedData.Type == "Local" and getasset then
+                        finalAsset = getasset(emotesFolder .. "/" .. selectedData.FileName)
+                    end
+                elseif activeRuntime.Mode == "Toggle" and activeRuntime.Active == true then
+                    local toggleData = activeRuntime.Data
+                    if toggleData.Type == "Roblox" then
+                        finalAsset = toggleData.TargetId
+                    elseif toggleData.Type == "Local" and getasset then
+                        finalAsset = getasset(emotesFolder .. "/" .. toggleData.FileName)
+                    end
+                end
+
+                if finalAsset and emote.SoundId ~= finalAsset then
+                    emote.SoundId = finalAsset
+                end
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- LMS TAB CREATION & DYNAMIC UI GENERATION
+-- ==========================================
+local LMSTab = Window:CreateTab("LMS Custom Music", "heart") 
+LMSTab:CreateParagraph({
+    Title = "LMS Custom Music",
+    Content = "Change theme audio tracks seamlessly via selectors and dynamic switches inside the game environment."
+})
+LMSTab:CreateSection("LMS Sound Controls")
+
+local LMSRuntimeRegistry = {}
+
+for originalId, config in pairs(LMSList) do
+    if config.ButtonType == "Dropbox" then
+        LMSRuntimeRegistry[originalId] = { Mode = "Dropbox", SelectedData = config.Options[1] }
+        local dropdownDisplayNames = {}
+        for _, opt in ipairs(config.Options) do table.insert(dropdownDisplayNames, opt.Name) end
+        
+        LMSTab:CreateDropdown({
+            Name = config.ToggleName,
+            Options = dropdownDisplayNames,
+            CurrentOption = {dropdownDisplayNames[1]},
+            Callback = function(SelectedOption)
+                local choice = SelectedOption[1]
+                for _, opt in ipairs(config.Options) do
+                    if opt.Name == choice then
+                        if LMSRuntimeRegistry[originalId] then LMSRuntimeRegistry[originalId].SelectedData = opt end
+                        break
+                    end
+                end
+            end
+        })
+    end
+end
+
+task.spawn(function()
+    while LocalActiveRef and LocalActiveRef.Parent and LocalActiveRef.Value do
+        task.wait(0.3)
+        local LMS_Path = workspace:FindFirstChild("Themes") and workspace.Themes:FindFirstChild("LastSurvivor")
+        if LMS_Path and LMS_Path:IsA("Sound") then
+            if not LMS_Path:GetAttribute("OriginalGameTrack") then
+                LMS_Path:SetAttribute("OriginalGameTrack", tostring(LMS_Path.SoundId))
+            end
+            
+            local actualGameId = LMS_Path:GetAttribute("OriginalGameTrack")
+
+            for originalId, activeRuntime in pairs(LMSRuntimeRegistry) do
+                local detectIdClean = string.match(originalId, "%d+")
+                if not string.find(actualGameId, detectIdClean) then continue end
+
+                local currentOptionName = ""
+                if activeRuntime.Mode == "Dropbox" then
+                    currentOptionName = activeRuntime.SelectedData.Name
+                elseif activeRuntime.Mode == "Toggle" then
+                    if activeRuntime.Active == true then
+                        currentOptionName = activeRuntime.Data.ToggleName
+                    else
+                        currentOptionName = "Default Audio"
+                    end
+                end
+
+                if LMS_Path:GetAttribute("TheLms") == currentOptionName then continue end
+
+                local finalLMSAsset = nil
+                if activeRuntime.Mode == "Dropbox" then
+                    local selectedData = activeRuntime.SelectedData
+                    if selectedData.Type == "Roblox" then
+                        finalLMSAsset = selectedData.TargetId
+                    elseif selectedData.Type == "Local" and getasset then
+                        finalLMSAsset = getasset(lmsFolder .. "/" .. selectedData.FileName)
+                    end
+                elseif activeRuntime.Mode == "Toggle" then
+                    if activeRuntime.Active == true then
+                        local toggleData = activeRuntime.Data
+                        if toggleData.Type == "Roblox" then
+                            finalLMSAsset = toggleData.TargetId
+                        elseif toggleData.Type == "Local" and getasset then
+                            finalLMSAsset = getasset(lmsFolder .. "/" .. toggleData.FileName)
+                        end
+                    else
+                        finalLMSAsset = originalId
+                    end
+                end
+
+                if finalLMSAsset then
+                    LMS_Path.SoundId = finalLMSAsset
+                    LMS_Path:SetAttribute("TheLms", currentOptionName)
+                    print("[LMS Matrix] Verified source track. Switched to: " .. currentOptionName)
+                end
+            end
+        end
+    end
+    
+    totalCleanup()
+    print("[LMS Swapper] Clash-proof monitoring thread stopped.")
+end)
+--[[
+--================================================--
+-- ABILITY ANIMATION OVERRIDE TAB SECTION
+--================================================--
+local AbilityTab = Window:CreateTab("Abilities", "sword")
+AbilityTab:CreateSection("Ability Animation Overrides")
+
+local AbilityConfigs = {
+    ["Punch"] = {
+        {"Default Punch", "Default"},
+        {"Grollusiam Punch", "rbxassetid://76501992854604"},
+        {"TV TIME punch","rbxassetid://137679730950847"},
+        {"Sancho punch1","rbxassetid://84413781229733"},
+        {"Sancho punch2","rbxassetid://133990700986998"},
+        {"Sancho punch3","rbxassetid://84895799077246"},
+        {"Sancho punch4","rbxassetid://86510482379594"},
+        {"AZURE PUNCH","rbxassetid://123172382755876"},
+    },
+    ["Slash"] = {
+        {"Default Punch", "Default"},
+        {"Grollusiam Punch", "rbxassetid://76501992854604"},
+        {"TV TIME punch","rbxassetid://137679730950847"},
+        {"Sancho punch1","rbxassetid://84413781229733"},
+        {"Sancho punch2","rbxassetid://133990700986998"},
+        {"Sancho punch3","rbxassetid://84895799077246"},
+        {"Sancho punch4","rbxassetid://86510482379594"},
+        {"AZURE PUNCH","rbxassetid://123172382755876"},
+    },
+    ["CorruptNature"] = {
+        --[[{"Default Punch", "Default"},
+        {"Grollusiam Punch", "rbxassetid://76501992854604"},
+        {"TV TIME Throw","rbxassetid://102918795536672"},
+    }
+}
+
+local SelectedAbilities = { ["Punch"] = "Default" }
+
+for abilityName, optionsList in pairs(AbilityConfigs) do
+    local dropdownOptions = {}
+    for _, item in ipairs(optionsList) do table.insert(dropdownOptions, item[1]) end
+    
+    AbilityTab:CreateDropdown({
+        Name = abilityName .. " Animation Swap",
+        Options = dropdownOptions,
+        CurrentOption = {dropdownOptions[1]},
+        Callback = function(selected)
+            for _, item in ipairs(optionsList) do
+                if item[1] == selected[1] then SelectedAbilities[abilityName] = item[2] break end
+            end
+        end
+    })
+end
+
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+
+    if not LocalActiveRef or not LocalActiveRef.Parent or not LocalActiveRef.Value then
+        return oldNamecall(self, ...)
+    end
+
+    if method == "FireServer" and tostring(self) == "RemoteEvent" and args[1] == "UseActorAbility" then
+        task.defer(function()
+            pcall(function()
+                local buf = args[2] and args[2][1]
+                if not buf then return end
+
+                local str = buffer.tostring(buf)
+                local parsedAbility = str:sub(6)
+
+                local targetAnimationId = SelectedAbilities[parsedAbility]
+                if targetAnimationId and targetAnimationId ~= "Default" then
+                    local character = player.Character
+                    if not character then return end
+
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if not humanoid then return end
+
+                    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = targetAnimationId
+
+                    local track = animator:LoadAnimation(anim)
+                    track.Priority = Enum.AnimationPriority.Action4
+                    track:Play()
+                end
+            end)
+        end)
+    end
+
+    return oldNamecall(self, ...)
+end)]]
+--================================================--
+-- MORPHS TAB SECTION
+--================================================--
+local MorphTab = Window:CreateTab("Morphs", "user")
+
+MorphTab:CreateParagraph({
+    Title = "How Morphs work",
+    Content = "So these Morphs will be visuals that only you can see and no one else, for the animations to be correct use the anims from the animation tab for it to work but just know animations can be seen by others aswell."
+})
+
+-- Core Visual Morph Function
+local function applyMorph(modelRig, morphName)
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then 
+        warn("No HumanoidRootPart found!")
+        return 
+    end
+
+    local cframe = hrp.CFrame
+
+    -- Wipe visual parts from local character
+    for _, child in pairs(char:GetChildren()) do
+        if child.Name ~= "Humanoid" 
+           and child.Name ~= "HumanoidRootPart" 
+           and child.Name ~= "SpeedMultipliers" 
+           and child.Name ~= "FOVMultipliers" 
+           and child.Name ~= "SpeedCapMultipliers" 
+           and child.Name ~= "ResistanceMultipliers" then
+            child:Destroy()
+        end
+    end
+
+    local morphClone = modelRig:Clone()
+    if morphClone and morphClone:IsA("Model") then
+        for _, part in pairs(morphClone:GetChildren()) do
+            if part.Name == "Humanoid" or part.Name == "HumanoidRootPart" then
+                if part.Name == "HumanoidRootPart" then
+                    local rootJoint = part:FindFirstChild("RootJoint")
+                    if rootJoint then rootJoint:Destroy() end
+
+                    for _, motor in pairs(part:GetChildren()) do
+                        if motor:IsA("Motor6D") then
+                            motor.Parent = char.HumanoidRootPart
+                            motor.Part0 = char.HumanoidRootPart
+                        end
+                    end
+                end
+                part:Destroy()
+            else
+                part.Parent = char
+                if part.Name == "Torso" or part.Name == "UpperTorso" then
+                    part.CFrame = cframe
+                end
+            end
+        end
+        morphClone:Destroy()
+    else
+        warn("Model not found or invalid format!")
+        return
+    end
+
+    task.wait()
+
+    local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+    local rootJoint = hrp:FindFirstChild("RootJoint")
+
+    if torso and rootJoint then
+        rootJoint.Part1 = torso
+    else
+        warn("Could not reattach RootJoint: Missing parts.")
+    end
+    
+    Rayfield:Notify({
+        Title = "Morph Applied",
+        Content = "Visually morphed into " .. morphName,
+        Duration = 2
+    })
+end
+
+-- Helper path resolution for assets and skins
+local Assets = ReplicatedStorage:WaitForChild("Assets")
+local KillersFolder = Assets:FindFirstChild("Killers")
+local SurvivorsFolder = Assets:FindFirstChild("Survivors")
+local SkinsFolder = Assets:FindFirstChild("Skins")
+
+--================================================--
+-- KILLERS SECTION
+--================================================--
+MorphTab:CreateSection("Killers")
+
+if KillersFolder then
+    for _, killer in ipairs(KillersFolder:GetChildren()) do
+        local killerName = killer.Name
+        local defaultRig = killer:FindFirstChild("Rig") or killer
+        
+        MorphTab:CreateSection(killerName)
+
+        -- Default Morph Button
+        if defaultRig then
+            MorphTab:CreateButton({
+                Name = "Default " .. killerName .. " Morph",
+                Callback = function()
+                    applyMorph(defaultRig, killerName)
+                end
+            })
+        end
+
+        -- Check for associated Skins
+        local killerSkinsFolder = nil
+        if SkinsFolder then
+            if SkinsFolder:FindFirstChild("Killers") and SkinsFolder.Killers:FindFirstChild(killerName) then
+                killerSkinsFolder = SkinsFolder.Killers[killerName]
+            elseif SkinsFolder:FindFirstChild(killerName) then
+                killerSkinsFolder = SkinsFolder[killerName]
+            end
+        end
+
+        if killerSkinsFolder then
+            local skinOptions = {}
+            local skinMap = {}
+
+            for _, skin in ipairs(killerSkinsFolder:GetChildren()) do
+                local skinRig = skin:FindFirstChild("Rig") or skin
+                table.insert(skinOptions, skin.Name)
+                skinMap[skin.Name] = skinRig
+            end
+
+            if #skinOptions > 0 then
+                local selectedSkin = skinOptions[1]
+
+                MorphTab:CreateDropdown({
+                    Name = killerName .. " Skins",
+                    Options = skinOptions,
+                    CurrentOption = {skinOptions[1]},
+                    Callback = function(Option)
+                        selectedSkin = Option[1]
+                    end
+                })
+
+                MorphTab:CreateButton({
+                    Name = "Morph Selected " .. killerName .. " Skin",
+                    Callback = function()
+                        if selectedSkin and skinMap[selectedSkin] then
+                            applyMorph(skinMap[selectedSkin], selectedSkin)
+                        end
+                    end
+                })
+            end
+        end
+    end
+end
+
+--================================================--
+-- SURVIVORS SECTION
+--================================================--
+MorphTab:CreateSection("Survivors")
+
+if SurvivorsFolder then
+    for _, survivor in ipairs(SurvivorsFolder:GetChildren()) do
+        local survivorName = survivor.Name
+        local defaultRig = survivor:FindFirstChild("Rig") or survivor
+        
+        MorphTab:CreateSection(survivorName)
+
+        -- Default Morph Button
+        if defaultRig then
+            MorphTab:CreateButton({
+                Name = "Default " .. survivorName .. " Morph",
+                Callback = function()
+                    applyMorph(defaultRig, survivorName)
+                end
+            })
+        end
+
+        -- Check for associated Skins
+        local survivorSkinsFolder = nil
+        if SkinsFolder then
+            if SkinsFolder:FindFirstChild("Survivors") and SkinsFolder.Survivors:FindFirstChild(survivorName) then
+                survivorSkinsFolder = SkinsFolder.Survivors[survivorName]
+            elseif SkinsFolder:FindFirstChild(survivorName) then
+                survivorSkinsFolder = SkinsFolder[survivorName]
+            end
+        end
+
+        if survivorSkinsFolder then
+            local skinOptions = {}
+            local skinMap = {}
+
+            for _, skin in ipairs(survivorSkinsFolder:GetChildren()) do
+                local skinRig = skin:FindFirstChild("Rig") or skin
+                table.insert(skinOptions, skin.Name)
+                skinMap[skin.Name] = skinRig
+            end
+
+            if #skinOptions > 0 then
+                local selectedSkin = skinOptions[1]
+
+                MorphTab:CreateDropdown({
+                    Name = survivorName .. " Skins",
+                    Options = skinOptions,
+                    CurrentOption = {skinOptions[1]},
+                    Callback = function(Option)
+                        selectedSkin = Option[1]
+                    end
+                })
+
+                MorphTab:CreateButton({
+                    Name = "Morph Selected " .. survivorName .. " Skin",
+                    Callback = function()
+                        if selectedSkin and skinMap[selectedSkin] then
+                            applyMorph(skinMap[selectedSkin], selectedSkin)
+                        end
+                    end
+                })
+            end
+        end
+    end
+end
+
+--[[
+-- V1 -- Data List Definition
+local List = {
+    {
+        Name = "Coolkidd Punch",
+        Detect = {"rbxassetid://18885909645"},
+        Replacements = {
+            ["Bluudud"] = "rbxassetid://134020762419760",
+            ["Stalker"] = {"rbxassetid://79710880505841","rbxassetid://70589254357640"}
+        }
+    },
+    -- 1. CORRUPT NATURE
+    {
+        Name = "Corrupt Nature",
+        Detect = { "rbxassetid://18885919947" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://70383685258424"
+        }
+    },
+
+    -- 2. SUMMON PIZZA DELIVERY
+    {
+        Name = "Summon Pizza Delivery",
+        Detect = { "rbxassetid://18885915433" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://115823480298887"
+        }
+    },
+
+    -- 3. WALKSPEED OVERRIDE (Split into 5 individual parts)
+    {
+        Name = "Walkspeed Start",
+        Detect = { "rbxassetid://98456918873918" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://77357414021059"
+        }
+    },
+    {
+        Name = "Walkspeed Loop",
+        Detect = { "rbxassetid://106776364623742" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://85960461320564"
+        },
+        Duration = 3 -- Automatically stop after 3 seconds
+    },
+    {
+        Name = "Walkspeed Hit",
+        Detect = { "rbxassetid://18885937766" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://91020848466464"
+        }
+    },
+    {
+        Name = "Walkspeed Miss",
+        Detect = { "rbxassetid://18885940850" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://72715576901515"
+        }
+    },
+    {
+        Name = "Walkspeed Collide",
+        Detect = { "rbxassetid://138325799977185" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://138325799977185"
+        }
+    },
+
+    -- 4. STUNNED (Split into 3 parts)
+    {
+        Name = "Stun Start",
+        Detect = { "rbxassetid://109869078763813" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://109869078763813"
+        }
+    },
+    {
+        Name = "Stun Loop",
+        Detect = { "rbxassetid://125337218572338" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://125337218572338"
+        }
+    },
+    {
+        Name = "Stun End",
+        Detect = { "rbxassetid://83635673319417" },
+        Replacements = {
+            ["Bluudude"] = "rbxassetid://83635673319417"
+        }
+    },
+}
+
+-- Tracking tables
+local activeToggles = {}
+local selectedTypes = {}
+local customTracks = {}
+
+-- Utility to stop all swapped custom tracks cleanly
+local function clearCustomTracks()
+    for _, track in pairs(customTracks) do
+        pcall(function()
+            track:Stop(0.1)
+            track:Destroy()
+        end)
+    end
+    table.clear(customTracks)
+end
+
+-- Get replacement animation ID
+--[[local function getReplacementAnimation(animId)
+    for _, animData in ipairs(List) do
+        if activeToggles[animData.Name] then
+            for _, detectId in ipairs(animData.Detect or {}) do
+                if string.find(animId, detectId) then
+                    local chosenType = selectedTypes[animData.Name]
+                    local replacement = animData.Replacements and animData.Replacements[chosenType]
+                    
+                    if type(replacement) == "table" then
+                        return replacement[math.random(1, #replacement)]
+                    elseif type(replacement) == "string" then
+                        return replacement
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end]]
+
+-- Get replacement animation ID and Duration
+local function getReplacementAnimation(animId)
+    for _, animData in ipairs(List) do
+        if activeToggles[animData.Name] then
+            for _, detectId in ipairs(animData.Detect or {}) do
+                if string.find(animId, detectId) then
+                    local chosenType = selectedTypes[animData.Name]
+                    local replacement = animData.Replacements and animData.Replacements[chosenType]
+                    local duration = animData.Duration -- Read duration if specified
+                    
+                    if type(replacement) == "table" then
+                        return replacement[math.random(1, #replacement)], duration
+                    elseif type(replacement) == "string" then
+                        return replacement, duration
+                    end
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+--[[ Hook Character Animator with script lifetime checks
+local function hookCharacter(char)
+    clearCustomTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    if not humanoid then return end
+
+    local animator = humanoid:WaitForChild("Animator", 5)
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(animationTrack)
+        if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+        local rawId = animationTrack.Animation.AnimationId
+        local newId, duration = getReplacementAnimation(rawId)
+
+        if newId and newId ~= "" then
+            animationTrack:Stop(0.1)
+            
+            local newAnim = Instance.new("Animation")
+            newAnim.AnimationId = newId
+            
+            local newTrack = animator:LoadAnimation(newAnim)
+            
+            -- Set to highest animation priority level
+            newTrack.Priority = Enum.AnimationPriority.Action4
+            
+            table.insert(customTracks, newTrack)
+            newTrack:Play()
+
+            -- Automatically stop after 3 seconds if Duration is set
+            if duration then
+                task.delay(duration, function()
+                    if newTrack and newTrack.IsPlaying then
+                        newTrack:Stop(0.1)
+                    end
+                end)
+            end
+        end
+    end)
+end
+]]
+--[[ Hook Character Animator with script lifetime checks
+local function hookCharacter(char)
+    clearCustomTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    if not humanoid then return end
+
+    local animator = humanoid:WaitForChild("Animator", 5)
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(animationTrack)
+        if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+        local rawId = animationTrack.Animation.AnimationId
+        local newId = getReplacementAnimation(rawId)
+
+        if newId and newId ~= "" then
+            animationTrack:Stop(0.1)
+            
+            local newAnim = Instance.new("Animation")
+            newAnim.AnimationId = newId
+            
+            local newTrack = animator:LoadAnimation(newAnim)
+            
+            -- Set to the highest animation priority level
+            newTrack.Priority = Enum.AnimationPriority.Action4
+            
+            table.insert(customTracks, newTrack)
+            newTrack:Play()
+        end
+    end)
+end]]
+-- Tracking table for active timed tracks to prevent re-triggering while running
+local activeTimedTracks = {}
+
+-- Hook Character Animator with script lifetime checks
+local function hookCharacter(char)
+    clearCustomTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    if not humanoid then return end
+
+    local animator = humanoid:WaitForChild("Animator", 5)
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(animationTrack)
+        if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+        local rawId = animationTrack.Animation.AnimationId
+        local newId, duration = getReplacementAnimation(rawId)
+
+        if newId and newId ~= "" then
+            -- Prevent restarting if this specific anim replacement is already running its 3-second timer
+            if duration and activeTimedTracks[newId] then
+                animationTrack:Stop(0)
+                return
+            end
+
+            animationTrack:Stop(0.1)
+            
+            local newAnim = Instance.new("Animation")
+            newAnim.AnimationId = newId
+            
+            local newTrack = animator:LoadAnimation(newAnim)
+            
+            -- Set to highest animation priority level
+            newTrack.Priority = Enum.AnimationPriority.Action4
+            
+            table.insert(customTracks, newTrack)
+            newTrack:Play()
+
+            -- Automatically stop after specified duration
+            if duration then
+                activeTimedTracks[newId] = true
+                newTrack.Looped = false -- Disable looping on Roblox track level
+                
+                task.delay(duration, function()
+                    if newTrack then
+                        newTrack:Stop(0.1)
+                        newTrack:Destroy()
+                    end
+                    activeTimedTracks[newId] = nil
+                end)
+            end
+        end
+    end)
+end
+if player.Character then hookCharacter(player.Character) end
+player.CharacterAdded:Connect(function(char)
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+    hookCharacter(char)
+end)
+
+-- Tab Interface
+local AnimTab = Window:CreateTab("Anim Changer", 4483362458)
+
+-- Reset Button
+AnimTab:CreateButton({
+    Name = "Reset All Animations to Default",
+    Callback = function()
+        for animName, _ in pairs(activeToggles) do
+            activeToggles[animName] = false
+        end
+        clearCustomTracks()
+        localReset()
+        Rayfield:Notify({
+            Title = "Reset Completed",
+            Content = "All animation overrides stopped and cleared.",
+            Duration = 2
+        })
+    end
+})
+
+AnimTab:CreateSection("Animation Controls")
+
+-- Dynamic Toggle & Dropdown Generator
+for _, animData in ipairs(List) do
+    local animName = animData.Name
+
+    local characterOptions = {}
+    if animData.Replacements then
+        for charName, _ in pairs(animData.Replacements) do
+            table.insert(characterOptions, charName)
+        end
+    end
+    table.sort(characterOptions)
+
+    selectedTypes[animName] = characterOptions[1] or ""
+    activeToggles[animName] = false
+
+    AnimTab:CreateToggle({
+        Name = "Enable " .. animName .. " Change",
+        CurrentValue = false,
+        Flag = animName:gsub("%s+", "") .. "Toggle",
+        Callback = function(Value)
+            activeToggles[animName] = Value
+            if not Value then
+                clearCustomTracks()
+                localReset()
+            end
+        end,
+    })
+
+    if #characterOptions > 0 then
+        AnimTab:CreateDropdown({
+            Name = animName .. " Changer",
+            Options = characterOptions,
+            CurrentOption = {characterOptions[1]},
+            MultipleOptions = false,
+            Flag = animName:gsub("%s+", "") .. "Dropdown",
+            Callback = function(Option)
+                local selected = type(Option) == "table" and Option[1] or Option
+                selectedTypes[animName] = selected
+            end,
+        })
+    end
+end
+
+]]
+
+--V2-- Anim changer
+--================================================--
+-- ANIM CHANGER (MATCHING ANIMATIONS TAB PATTERN)
+--================================================--
+
+-- Configuration Data List
+local List = {
+    {
+        Name = "Coolkidd Punch",
+        Detect = { "rbxassetid://18885909645" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude Punch"] = "rbxassetid://134020762419760",
+            ["Stalker Stab 1"] = "rbxassetid://79710880505841",
+            ["Stalker Stab 2"] = "rbxassetid://70589254357640"
+        }
+    },
+    {
+        Name = "Corrupt Nature",
+        Detect = { "rbxassetid://18885919947" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude Corrupt Nature"] = "rbxassetid://70383685258424"
+        }
+    },
+    {
+        Name = "Summon Pizza Delivery",
+        Detect = { "rbxassetid://18885915433" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude Summon"] = "rbxassetid://115823480298887",
+            ["Stalker Scream"]  = "rbxassetid://86697278751915",
+            ["Stalker Rage"]    = "rbxassetid://81878779344542"
+        }
+    },
+    {
+        Name = "Walkspeed Start",
+        Detect = { "rbxassetid://98456918873918" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://77357414021059"
+        }
+    },
+    {
+        Name = "Walkspeed Loop",
+        Detect = { "rbxassetid://106776364623742" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://85960461320564"
+        },
+        Duration = 3
+    },
+    {
+        Name = "Walkspeed Hit",
+        Detect = { "rbxassetid://18885937766" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://91020848466464"
+        }
+    },
+    {
+        Name = "Walkspeed Miss",
+        Detect = { "rbxassetid://18885940850" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://72715576901515"
+        }
+    },
+    {
+        Name = "Walkspeed Collide",
+        Detect = { "rbxassetid://138325799977185" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://138325799977185"
+        }
+    },
+    {
+        Name = "Stun Start",
+        Detect = { "rbxassetid://109869078763813" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://109869078763813"
+        }
+    },
+    {
+        Name = "Stun Loop",
+        Detect = { "rbxassetid://125337218572338" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://125337218572338"
+        }
+    },
+    {
+        Name = "Stun End",
+        Detect = { "rbxassetid://83635673319417" },
+        Replacements = {
+            ["Normal"] = "",
+            ["Bluudude"] = "rbxassetid://83635673319417"
+        }
+    },
+}
+
+-- Tracking tables (Same structure as original script)
+local activeToggles = {}
+local selectedTypes = {}
+local customTracks = {}
+local activeTimedTracks = {}
+
+-- Clean & Stop tracks (Identical to Animations tab cleanup)
+local function clearCustomTracks()
+    for _, track in pairs(customTracks) do
+        pcall(function()
+            track:Stop(0.1)
+            track:Destroy()
+        end)
+    end
+    table.clear(customTracks)
+    table.clear(activeTimedTracks)
+    localReset()
+end
+
+-- Get replacement animation ID and Duration
+local function getReplacementAnimation(animId)
+    for _, animData in ipairs(List) do
+        if activeToggles[animData.Name] then
+            for _, detectId in ipairs(animData.Detect or {}) do
+                if string.find(animId, detectId) then
+                    local chosenType = selectedTypes[animData.Name]
+                    
+                    -- If set to Normal or empty, return nil to play original animation
+                    if chosenType == "Normal" or chosenType == "" or not chosenType then
+                        return nil, nil
+                    end
+
+                    local replacement = animData.Replacements and animData.Replacements[chosenType]
+                    local duration = animData.Duration
+                    
+                    if type(replacement) == "table" then
+                        return replacement[math.random(1, #replacement)], duration
+                    elseif type(replacement) == "string" then
+                        return replacement, duration
+                    end
+                end
+            end
+        end
+    end
+    return nil, nil
+end
+
+-- Hook Character Animator
+local function hookCharacter(char)
+    clearCustomTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+    local humanoid = char:WaitForChild("Humanoid", 5)
+    if not humanoid then return end
+
+    local animator = humanoid:WaitForChild("Animator", 5)
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(animationTrack)
+        if not LocalActiveRef or not LocalActiveRef.Value then return end
+
+        local rawId = animationTrack.Animation.AnimationId
+        local newId, duration = getReplacementAnimation(rawId)
+
+        if newId and newId ~= "" then
+            if duration and activeTimedTracks[newId] then
+                animationTrack:Stop(0)
+                return
+            end
+
+            animationTrack:Stop(0.1)
+            
+            local newAnim = Instance.new("Animation")
+            newAnim.AnimationId = newId
+            
+            local newTrack = animator:LoadAnimation(newAnim)
+            newTrack.Priority = Enum.AnimationPriority.Action4
+            
+            table.insert(customTracks, newTrack)
+            newTrack:Play()
+
+            if duration then
+                activeTimedTracks[newId] = true
+                newTrack.Looped = false
+                
+                task.delay(duration, function()
+                    if newTrack then
+                        newTrack:Stop(0.1)
+                        newTrack:Destroy()
+                    end
+                    activeTimedTracks[newId] = nil
+                end)
+            end
+        end
+    end)
+end
+
+if player.Character then hookCharacter(player.Character) end
+player.CharacterAdded:Connect(function(char)
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+    hookCharacter(char)
+end)
+
+-- Tab Interface (Matches exact layout from your script)
+local AnimTab = Window:CreateTab("Anim Changer", 4483362458)
+
+-- Standard Reset Button (Matches Animations Tab behavior)
+AnimTab:CreateButton({
+    Name = "Reset All Animations to Normal",
+    Callback = function()
+        for animName, _ in pairs(activeToggles) do
+            activeToggles[animName] = false
+            selectedTypes[animName] = "Normal"
+        end
+        clearCustomTracks()
+        Rayfield:Notify({
+            Title = "Reset",
+            Content = "Restored default animations",
+            Duration = 2
+        })
+    end
+})
+
+AnimTab:CreateSection("Animation Controls")
+
+-- Dynamic Dropdown Generator
+for _, animData in ipairs(List) do
+    local animName = animData.Name
+
+    local characterOptions = {}
+    if animData.Replacements then
+        for charName, _ in pairs(animData.Replacements) do
+            table.insert(characterOptions, charName)
+        end
+    end
+    table.sort(characterOptions)
+
+    -- Default selection is Normal on script launch / reload
+    selectedTypes[animName] = "Normal"
+    activeToggles[animName] = false
+
+    AnimTab:CreateToggle({
+        Name = "Enable " .. animName .. " Change",
+        CurrentValue = false,
+        Flag = animName:gsub("%s+", "") .. "Toggle",
+        Callback = function(Value)
+            activeToggles[animName] = Value
+            if not Value then
+                clearCustomTracks()
+            end
+        end,
+    })
+
+    if #characterOptions > 0 then
+        AnimTab:CreateDropdown({
+            Name = animName .. " Changer",
+            Options = characterOptions,
+            CurrentOption = {"Normal"},
+            MultipleOptions = false,
+            Flag = animName:gsub("%s+", "") .. "Dropdown",
+            Callback = function(Option)
+                local selected = type(Option) == "table" and Option[1] or Option
+                selectedTypes[animName] = selected
+                if selected == "Normal" then
+                    clearCustomTracks()
+                end
+            end,
+        })
+    end
+end
