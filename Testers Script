@@ -31,7 +31,7 @@ local Lighting = game:GetService("Lighting")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
-local NewEmotes = "https://raw.githubusercontent.com/f6PlayzOfficalAccount/Forsaken-Scripts/refs/heads/main/EmotesForsaken?token=GHSAT0AAAAAAD7BIYQW4IWRV7HIJ2DMO56I2RI2KFQ"
+local NewEmotes = "https://raw.githubusercontent.com/f6PlayzOfficalAccount/Forsaken-Scripts/refs/heads/main/EmotesForsaken"
 
 -- Keep track of default lighting settings to restore them completely
 local DefaultClockTime = Lighting.ClockTime
@@ -1091,470 +1091,122 @@ if SurvivorsFolder then
     end
 end
 
---[[
--- V1 -- Data List Definition
-local List = {
-    {
-        Name = "Coolkidd Punch",
-        Detect = {"rbxassetid://18885909645"},
-        Replacements = {
-            ["Bluudud"] = "rbxassetid://134020762419760",
-            ["Stalker"] = {"rbxassetid://79710880505841","rbxassetid://70589254357640"}
-        }
-    },
-    -- 1. CORRUPT NATURE
-    {
-        Name = "Corrupt Nature",
-        Detect = { "rbxassetid://18885919947" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://70383685258424"
-        }
-    },
-
-    -- 2. SUMMON PIZZA DELIVERY
-    {
-        Name = "Summon Pizza Delivery",
-        Detect = { "rbxassetid://18885915433" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://115823480298887"
-        }
-    },
-
-    -- 3. WALKSPEED OVERRIDE (Split into 5 individual parts)
-    {
-        Name = "Walkspeed Start",
-        Detect = { "rbxassetid://98456918873918" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://77357414021059"
-        }
-    },
-    {
-        Name = "Walkspeed Loop",
-        Detect = { "rbxassetid://106776364623742" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://85960461320564"
-        },
-        Duration = 3 -- Automatically stop after 3 seconds
-    },
-    {
-        Name = "Walkspeed Hit",
-        Detect = { "rbxassetid://18885937766" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://91020848466464"
-        }
-    },
-    {
-        Name = "Walkspeed Miss",
-        Detect = { "rbxassetid://18885940850" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://72715576901515"
-        }
-    },
-    {
-        Name = "Walkspeed Collide",
-        Detect = { "rbxassetid://138325799977185" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://138325799977185"
-        }
-    },
-
-    -- 4. STUNNED (Split into 3 parts)
-    {
-        Name = "Stun Start",
-        Detect = { "rbxassetid://109869078763813" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://109869078763813"
-        }
-    },
-    {
-        Name = "Stun Loop",
-        Detect = { "rbxassetid://125337218572338" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://125337218572338"
-        }
-    },
-    {
-        Name = "Stun End",
-        Detect = { "rbxassetid://83635673319417" },
-        Replacements = {
-            ["Bluudude"] = "rbxassetid://83635673319417"
-        }
-    },
-}
-
--- Tracking tables
-local activeToggles = {}
-local selectedTypes = {}
-local customTracks = {}
-
--- Utility to stop all swapped custom tracks cleanly
-local function clearCustomTracks()
-    for _, track in pairs(customTracks) do
-        pcall(function()
-            track:Stop(0.1)
-            track:Destroy()
-        end)
-    end
-    table.clear(customTracks)
-end
-
--- Get replacement animation ID
---[[local function getReplacementAnimation(animId)
-    for _, animData in ipairs(List) do
-        if activeToggles[animData.Name] then
-            for _, detectId in ipairs(animData.Detect or {}) do
-                if string.find(animId, detectId) then
-                    local chosenType = selectedTypes[animData.Name]
-                    local replacement = animData.Replacements and animData.Replacements[chosenType]
-                    
-                    if type(replacement) == "table" then
-                        return replacement[math.random(1, #replacement)]
-                    elseif type(replacement) == "string" then
-                        return replacement
-                    end
-                end
-            end
-        end
-    end
-    return nil
-end]]
-
--- Get replacement animation ID and Duration
-local function getReplacementAnimation(animId)
-    for _, animData in ipairs(List) do
-        if activeToggles[animData.Name] then
-            for _, detectId in ipairs(animData.Detect or {}) do
-                if string.find(animId, detectId) then
-                    local chosenType = selectedTypes[animData.Name]
-                    local replacement = animData.Replacements and animData.Replacements[chosenType]
-                    local duration = animData.Duration -- Read duration if specified
-                    
-                    if type(replacement) == "table" then
-                        return replacement[math.random(1, #replacement)], duration
-                    elseif type(replacement) == "string" then
-                        return replacement, duration
-                    end
-                end
-            end
-        end
-    end
-    return nil, nil
-end
-
---[[ Hook Character Animator with script lifetime checks
-local function hookCharacter(char)
-    clearCustomTracks()
-    if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-    local humanoid = char:WaitForChild("Humanoid", 5)
-    if not humanoid then return end
-
-    local animator = humanoid:WaitForChild("Animator", 5)
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(animationTrack)
-        if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-        local rawId = animationTrack.Animation.AnimationId
-        local newId, duration = getReplacementAnimation(rawId)
-
-        if newId and newId ~= "" then
-            animationTrack:Stop(0.1)
-            
-            local newAnim = Instance.new("Animation")
-            newAnim.AnimationId = newId
-            
-            local newTrack = animator:LoadAnimation(newAnim)
-            
-            -- Set to highest animation priority level
-            newTrack.Priority = Enum.AnimationPriority.Action4
-            
-            table.insert(customTracks, newTrack)
-            newTrack:Play()
-
-            -- Automatically stop after 3 seconds if Duration is set
-            if duration then
-                task.delay(duration, function()
-                    if newTrack and newTrack.IsPlaying then
-                        newTrack:Stop(0.1)
-                    end
-                end)
-            end
-        end
-    end)
-end
-]]
---[[ Hook Character Animator with script lifetime checks
-local function hookCharacter(char)
-    clearCustomTracks()
-    if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-    local humanoid = char:WaitForChild("Humanoid", 5)
-    if not humanoid then return end
-
-    local animator = humanoid:WaitForChild("Animator", 5)
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(animationTrack)
-        if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-        local rawId = animationTrack.Animation.AnimationId
-        local newId = getReplacementAnimation(rawId)
-
-        if newId and newId ~= "" then
-            animationTrack:Stop(0.1)
-            
-            local newAnim = Instance.new("Animation")
-            newAnim.AnimationId = newId
-            
-            local newTrack = animator:LoadAnimation(newAnim)
-            
-            -- Set to the highest animation priority level
-            newTrack.Priority = Enum.AnimationPriority.Action4
-            
-            table.insert(customTracks, newTrack)
-            newTrack:Play()
-        end
-    end)
-end]]
--- Tracking table for active timed tracks to prevent re-triggering while running
-local activeTimedTracks = {}
-
--- Hook Character Animator with script lifetime checks
-local function hookCharacter(char)
-    clearCustomTracks()
-    if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-    local humanoid = char:WaitForChild("Humanoid", 5)
-    if not humanoid then return end
-
-    local animator = humanoid:WaitForChild("Animator", 5)
-    if not animator then return end
-
-    animator.AnimationPlayed:Connect(function(animationTrack)
-        if not LocalActiveRef or not LocalActiveRef.Value then return end
-
-        local rawId = animationTrack.Animation.AnimationId
-        local newId, duration = getReplacementAnimation(rawId)
-
-        if newId and newId ~= "" then
-            -- Prevent restarting if this specific anim replacement is already running its 3-second timer
-            if duration and activeTimedTracks[newId] then
-                animationTrack:Stop(0)
-                return
-            end
-
-            animationTrack:Stop(0.1)
-            
-            local newAnim = Instance.new("Animation")
-            newAnim.AnimationId = newId
-            
-            local newTrack = animator:LoadAnimation(newAnim)
-            
-            -- Set to highest animation priority level
-            newTrack.Priority = Enum.AnimationPriority.Action4
-            
-            table.insert(customTracks, newTrack)
-            newTrack:Play()
-
-            -- Automatically stop after specified duration
-            if duration then
-                activeTimedTracks[newId] = true
-                newTrack.Looped = false -- Disable looping on Roblox track level
-                
-                task.delay(duration, function()
-                    if newTrack then
-                        newTrack:Stop(0.1)
-                        newTrack:Destroy()
-                    end
-                    activeTimedTracks[newId] = nil
-                end)
-            end
-        end
-    end)
-end
-if player.Character then hookCharacter(player.Character) end
-player.CharacterAdded:Connect(function(char)
-    if not LocalActiveRef or not LocalActiveRef.Value then return end
-    hookCharacter(char)
-end)
-
--- Tab Interface
-local AnimTab = Window:CreateTab("Anim Changer", 4483362458)
-
--- Reset Button
-AnimTab:CreateButton({
-    Name = "Reset All Animations to Default",
-    Callback = function()
-        for animName, _ in pairs(activeToggles) do
-            activeToggles[animName] = false
-        end
-        clearCustomTracks()
-        localReset()
-        Rayfield:Notify({
-            Title = "Reset Completed",
-            Content = "All animation overrides stopped and cleared.",
-            Duration = 2
-        })
-    end
-})
-
-AnimTab:CreateSection("Animation Controls")
-
--- Dynamic Toggle & Dropdown Generator
-for _, animData in ipairs(List) do
-    local animName = animData.Name
-
-    local characterOptions = {}
-    if animData.Replacements then
-        for charName, _ in pairs(animData.Replacements) do
-            table.insert(characterOptions, charName)
-        end
-    end
-    table.sort(characterOptions)
-
-    selectedTypes[animName] = characterOptions[1] or ""
-    activeToggles[animName] = false
-
-    AnimTab:CreateToggle({
-        Name = "Enable " .. animName .. " Change",
-        CurrentValue = false,
-        Flag = animName:gsub("%s+", "") .. "Toggle",
-        Callback = function(Value)
-            activeToggles[animName] = Value
-            if not Value then
-                clearCustomTracks()
-                localReset()
-            end
-        end,
-    })
-
-    if #characterOptions > 0 then
-        AnimTab:CreateDropdown({
-            Name = animName .. " Changer",
-            Options = characterOptions,
-            CurrentOption = {characterOptions[1]},
-            MultipleOptions = false,
-            Flag = animName:gsub("%s+", "") .. "Dropdown",
-            Callback = function(Option)
-                local selected = type(Option) == "table" and Option[1] or Option
-                selectedTypes[animName] = selected
-            end,
-        })
-    end
-end
-
-]]
-
---V2-- Anim changer
 --================================================--
--- ANIM CHANGER (MATCHING ANIMATIONS TAB PATTERN)
+-- ANIM CHANGER TAB (CATEGORIZED BY CHARACTER)
 --================================================--
 
--- Configuration Data List
-local List = {
+-- 1. Categorized Configuration List Structure
+local CharacterList = {
     {
-        Name = "Coolkidd Punch",
-        Detect = { "rbxassetid://18885909645" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude Punch"] = "rbxassetid://134020762419760",
-            ["Stalker Stab 1"] = "rbxassetid://79710880505841",
-            ["Stalker Stab 2"] = "rbxassetid://70589254357640"
+        CharacterName = "Coolkidd",
+        Animations = {
+            {
+                Name = "Coolkidd Punch",
+                Detect = { "rbxassetid://18885909645" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude Punch"] = "rbxassetid://134020762419760",
+                    ["Stalker Stab 1"] = "rbxassetid://79710880505841",
+                    ["Stalker Stab 2"] = "rbxassetid://70589254357640"
+                }
+            },
+            {
+                Name = "Corrupt Nature",
+                Detect = { "rbxassetid://18885919947" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude Corrupt Nature"] = "rbxassetid://70383685258424"
+                },
+                Duration = 1.4
+            },
+            {
+                Name = "Summon Pizza Delivery",
+                Detect = { "rbxassetid://18885915433" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude Summon"] = "rbxassetid://115823480298887",
+                    ["Stalker Scream"]  = "rbxassetid://86697278751915",
+                    ["Stalker Rage"]    = "rbxassetid://81878779344542"
+                }
+            },
+            {
+                Name = "Walkspeed Start",
+                Detect = { "rbxassetid://98456918873918" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://77357414021059"
+                }
+            },
+            {
+                Name = "Walkspeed Loop",
+                Detect = { "rbxassetid://106776364623742" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://85960461320564"
+                },
+                Duration = 3
+            },
+            {
+                Name = "Walkspeed Hit",
+                Detect = { "rbxassetid://18885937766" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://91020848466464"
+                }
+            },
+            {
+                Name = "Walkspeed Miss",
+                Detect = { "rbxassetid://18885940850" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://72715576901515"
+                }
+            },
+            {
+                Name = "Walkspeed Collide",
+                Detect = { "rbxassetid://138325799977185" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://138325799977185"
+                }
+            },
+            {
+                Name = "Stun Start",
+                Detect = { "rbxassetid://109869078763813" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://109869078763813"
+                }
+            },
+            {
+                Name = "Stun Loop",
+                Detect = { "rbxassetid://125337218572338" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://125337218572338"
+                },
+                Duration = 3
+            },
+            {
+                Name = "Stun End",
+                Detect = { "rbxassetid://83635673319417" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Bluudude"] = "rbxassetid://83635673319417"
+                }
+            }
         }
-    },
-    {
-        Name = "Corrupt Nature",
-        Detect = { "rbxassetid://18885919947" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude Corrupt Nature"] = "rbxassetid://70383685258424"
-        }
-    },
-    {
-        Name = "Summon Pizza Delivery",
-        Detect = { "rbxassetid://18885915433" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude Summon"] = "rbxassetid://115823480298887",
-            ["Stalker Scream"]  = "rbxassetid://86697278751915",
-            ["Stalker Rage"]    = "rbxassetid://81878779344542"
-        }
-    },
-    {
-        Name = "Walkspeed Start",
-        Detect = { "rbxassetid://98456918873918" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://77357414021059"
-        }
-    },
-    {
-        Name = "Walkspeed Loop",
-        Detect = { "rbxassetid://106776364623742" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://85960461320564"
-        },
-        Duration = 3
-    },
-    {
-        Name = "Walkspeed Hit",
-        Detect = { "rbxassetid://18885937766" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://91020848466464"
-        }
-    },
-    {
-        Name = "Walkspeed Miss",
-        Detect = { "rbxassetid://18885940850" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://72715576901515"
-        }
-    },
-    {
-        Name = "Walkspeed Collide",
-        Detect = { "rbxassetid://138325799977185" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://138325799977185"
-        }
-    },
-    {
-        Name = "Stun Start",
-        Detect = { "rbxassetid://109869078763813" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://109869078763813"
-        }
-    },
-    {
-        Name = "Stun Loop",
-        Detect = { "rbxassetid://125337218572338" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://125337218572338"
-        }
-    },
-    {
-        Name = "Stun End",
-        Detect = { "rbxassetid://83635673319417" },
-        Replacements = {
-            ["Normal"] = "",
-            ["Bluudude"] = "rbxassetid://83635673319417"
-        }
-    },
+    }
+    -- You can add more characters here easily!
 }
 
--- Tracking tables (Same structure as original script)
-local activeToggles = {}
+-- 2. State & Memory Management
+local characterToggles = {}
 local selectedTypes = {}
 local customTracks = {}
 local activeTimedTracks = {}
 
--- Clean & Stop tracks (Identical to Animations tab cleanup)
+-- Track Cleanup
 local function clearCustomTracks()
     for _, track in pairs(customTracks) do
         pcall(function()
@@ -1564,29 +1216,31 @@ local function clearCustomTracks()
     end
     table.clear(customTracks)
     table.clear(activeTimedTracks)
-    localReset()
+    if localReset then localReset() end
 end
 
--- Get replacement animation ID and Duration
+-- Animation Replacement Detection
 local function getReplacementAnimation(animId)
-    for _, animData in ipairs(List) do
-        if activeToggles[animData.Name] then
-            for _, detectId in ipairs(animData.Detect or {}) do
-                if string.find(animId, detectId) then
-                    local chosenType = selectedTypes[animData.Name]
-                    
-                    -- If set to Normal or empty, return nil to play original animation
-                    if chosenType == "Normal" or chosenType == "" or not chosenType then
-                        return nil, nil
-                    end
+    for _, charData in ipairs(CharacterList) do
+        -- Master character toggle check
+        if characterToggles[charData.CharacterName] then
+            for _, animData in ipairs(charData.Animations) do
+                for _, detectId in ipairs(animData.Detect or {}) do
+                    if string.find(animId, detectId) then
+                        local chosenType = selectedTypes[animData.Name]
+                        
+                        if chosenType == "Default" or chosenType == "" or not chosenType then
+                            return nil, nil
+                        end
 
-                    local replacement = animData.Replacements and animData.Replacements[chosenType]
-                    local duration = animData.Duration
-                    
-                    if type(replacement) == "table" then
-                        return replacement[math.random(1, #replacement)], duration
-                    elseif type(replacement) == "string" then
-                        return replacement, duration
+                        local replacement = animData.Replacements and animData.Replacements[chosenType]
+                        local duration = animData.Duration
+                        
+                        if type(replacement) == "table" then
+                            return replacement[math.random(1, #replacement)], duration
+                        elseif type(replacement) == "string" then
+                            return replacement, duration
+                        end
                     end
                 end
             end
@@ -1595,7 +1249,8 @@ local function getReplacementAnimation(animId)
     return nil, nil
 end
 
--- Hook Character Animator
+-- 3. Character Animator Hook (Replicates across server via Humanoid.Animator)
+-- Hook Character Animator with Anti-Spam Check
 local function hookCharacter(char)
     clearCustomTracks()
     if not LocalActiveRef or not LocalActiveRef.Value then return end
@@ -1613,11 +1268,13 @@ local function hookCharacter(char)
         local newId, duration = getReplacementAnimation(rawId)
 
         if newId and newId ~= "" then
+            -- ANTI-SPAM: Block execution if this specific animation is already running
             if duration and activeTimedTracks[newId] then
                 animationTrack:Stop(0)
                 return
             end
 
+            -- Stop the original played track
             animationTrack:Stop(0.1)
             
             local newAnim = Instance.new("Animation")
@@ -1629,8 +1286,9 @@ local function hookCharacter(char)
             table.insert(customTracks, newTrack)
             newTrack:Play()
 
+            -- Apply Duration & Anti-Spam Lockout
             if duration then
-                activeTimedTracks[newId] = true
+                activeTimedTracks[newId] = true -- Lock track from spamming
                 newTrack.Looped = false
                 
                 task.delay(duration, function()
@@ -1638,7 +1296,7 @@ local function hookCharacter(char)
                         newTrack:Stop(0.1)
                         newTrack:Destroy()
                     end
-                    activeTimedTracks[newId] = nil
+                    activeTimedTracks[newId] = nil -- Unlock track when finished
                 end)
             end
         end
@@ -1651,70 +1309,80 @@ player.CharacterAdded:Connect(function(char)
     hookCharacter(char)
 end)
 
--- Tab Interface (Matches exact layout from your script)
+-- 4. Rayfield Interface Construction
 local AnimTab = Window:CreateTab("Anim Changer", 4483362458)
 
--- Standard Reset Button (Matches Animations Tab behavior)
+-- Master Reset Button
 AnimTab:CreateButton({
-    Name = "Reset All Animations to Normal",
+    Name = "Reset All Animations to Default",
     Callback = function()
-        for animName, _ in pairs(activeToggles) do
-            activeToggles[animName] = false
-            selectedTypes[animName] = "Normal"
+        for charName, _ in pairs(characterToggles) do
+            characterToggles[charName] = false
+        end
+        for animName, _ in pairs(selectedTypes) do
+            selectedTypes[animName] = "Default"
         end
         clearCustomTracks()
         Rayfield:Notify({
-            Title = "Reset",
-            Content = "Restored default animations",
+            Title = "Reset Completed",
+            Content = "All animation overrides turned off.",
             Duration = 2
         })
     end
 })
 
-AnimTab:CreateSection("Animation Controls")
+-- Dynamic UI Layout Generator (Groups by Character)
+for _, charData in ipairs(CharacterList) do
+    local charName = charData.CharacterName
 
--- Dynamic Dropdown Generator
-for _, animData in ipairs(List) do
-    local animName = animData.Name
+    -- Section Title (e.g. COOLKIDD)
+    AnimTab:CreateSection(string.upper(charName))
 
-    local characterOptions = {}
-    if animData.Replacements then
-        for charName, _ in pairs(animData.Replacements) do
-            table.insert(characterOptions, charName)
-        end
-    end
-    table.sort(characterOptions)
-
-    -- Default selection is Normal on script launch / reload
-    selectedTypes[animName] = "Normal"
-    activeToggles[animName] = false
+    -- Master Toggle for this Character (Defaults to OFF)
+    characterToggles[charName] = false
 
     AnimTab:CreateToggle({
-        Name = "Enable " .. animName .. " Change",
+        Name = "Toggle " .. charName .. " Animation Changer",
         CurrentValue = false,
-        Flag = animName:gsub("%s+", "") .. "Toggle",
+        Flag = charName .. "MasterToggle",
         Callback = function(Value)
-            activeToggles[animName] = Value
+            characterToggles[charName] = Value
             if not Value then
                 clearCustomTracks()
             end
         end,
     })
 
-    if #characterOptions > 0 then
-        AnimTab:CreateDropdown({
-            Name = animName .. " Changer",
-            Options = characterOptions,
-            CurrentOption = {"Normal"},
-            MultipleOptions = false,
-            Flag = animName:gsub("%s+", "") .. "Dropdown",
-            Callback = function(Option)
-                local selected = type(Option) == "table" and Option[1] or Option
-                selectedTypes[animName] = selected
-                if selected == "Normal" then
-                    clearCustomTracks()
-                end
-            end,
-        })
+    -- Dropdowns for every animation belonging to this Character
+    for _, animData in ipairs(charData.Animations) do
+        local animName = animData.Name
+
+        local characterOptions = {}
+        if animData.Replacements then
+            for optionName, _ in pairs(animData.Replacements) do
+                table.insert(characterOptions, optionName)
+            end
+        end
+        table.sort(characterOptions)
+
+        -- Defaults to Default on script execution/reload
+        selectedTypes[animName] = "Default"
+
+        if #characterOptions > 0 then
+            AnimTab:CreateDropdown({
+                Name = animName .. " Change",
+                Options = characterOptions,
+                CurrentOption = {"Default"},
+                MultipleOptions = false,
+                Flag = animName:gsub("%s+", "") .. "Dropdown",
+                Callback = function(Option)
+                    local selected = type(Option) == "table" and Option[1] or Option
+                    selectedTypes[animName] = selected
+                    if selected == "Default" then
+                        clearCustomTracks()
+                    end
+                end,
+            })
+        end
     end
 end
