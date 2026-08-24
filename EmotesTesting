@@ -1,6 +1,6 @@
 --// GAME : FORSAKEN
---// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED)
---// Version 6.6
+--// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED + TIME SYNC)
+--// Version 6.7
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -16,6 +16,7 @@ local currentSound
 local loopConnection
 local autoWalkConnection = nil
 local speedTrackConnection = nil
+local syncConnection = nil
 local actionId = 0
 
 -- Custom Randomization Tables
@@ -105,6 +106,11 @@ local function stopAll()
         speedTrackConnection = nil
     end
 
+    if syncConnection then
+        syncConnection:Disconnect()
+        syncConnection = nil
+    end
+
     if character then
         disableCamLock(character)
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -112,6 +118,75 @@ local function stopAll()
             humanoid.WalkSpeed = 16
         end
     end
+end
+
+-- ANIMATION SYNC FUNCTION (100 STUDS DISTANCE)
+-- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
+-- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
+local function startAnimationSync(localTrack, targetAnimId)
+    if syncConnection then syncConnection:Disconnect() end
+
+    syncConnection = RunService.RenderStepped:Connect(function()
+        if not localTrack or not localTrack.IsPlaying then
+            if syncConnection then
+                syncConnection:Disconnect()
+                syncConnection = nil
+            end
+            return
+        end
+
+        local myChar = player.Character
+        local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        if not myHrp then return end
+
+        -- SMOOTH AUDIO SYNC (NO POPS)
+        if currentSound and currentSound.IsPlaying and currentSound.TimeLength > 0 and localTrack.Length > 0 then
+            local targetTime = localTrack.TimePosition % currentSound.TimeLength
+            local diff = targetTime - currentSound.TimePosition
+
+            -- Handle loop wrap-around
+            if diff < -currentSound.TimeLength / 2 then
+                diff = diff + currentSound.TimeLength
+            elseif diff > currentSound.TimeLength / 2 then
+                diff = diff - currentSound.TimeLength
+            end
+
+            -- If drift is huge, hard-seek (rare). Otherwise, smoothly alter playback speed
+            if math.abs(diff) > 0.25 then
+                currentSound.TimePosition = targetTime
+                currentSound.PlaybackSpeed = 1
+            elseif math.abs(diff) > 0.03 then
+                currentSound.PlaybackSpeed = math.clamp(1 + (diff * 0.5), 0.95, 1.05)
+            else
+                currentSound.PlaybackSpeed = 1
+            end
+        end
+
+        -- ANIMATION SYNC (100 STUDS)
+        for _, otherPlayer in ipairs(Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character then
+                local otherHrp = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local otherHum = otherPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+                if otherHrp and otherHum then
+                    local distance = (myHrp.Position - otherHrp.Position).Magnitude
+                    if distance <= 100 then
+                        local animator = otherHum:FindFirstChildOfClass("Animator")
+                        if animator then
+                            for _, playingTrack in ipairs(animator:GetPlayingAnimationTracks()) do
+                                if playingTrack.Animation and playingTrack.Animation.AnimationId == targetAnimId then
+                                    if math.abs(localTrack.TimePosition - playingTrack.TimePosition) > 0.08 then
+                                        localTrack.TimePosition = playingTrack.TimePosition
+                                    end
+                                    return
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
 end
 
 -- SPEED TRACKER
@@ -149,6 +224,7 @@ local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId,
     introTrack.Looped = false
     introTrack:Play()
     currentAnim = introTrack
+    startAnimationSync(introTrack, introAnimId)
 
     -- Play Intro Sound
     if introSoundId then
@@ -177,6 +253,7 @@ local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId,
         loopTrack.Looped = true
         loopTrack:Play()
         currentAnim = loopTrack
+        startAnimationSync(loopTrack, loopAnimId)
 
         if loopSoundId then
             local sound = Instance.new("Sound")
@@ -300,6 +377,7 @@ local function LoadSukunaAssets(character)
 
 	return spawnedAssets
 end
+
 local function SpawnShucksAssets(character)
     local spawnedAssets = {}
 
@@ -437,9 +515,6 @@ local function SpawnShucksAssets(character)
 
     return spawnedAssets
 end
-
-
-
 
 local function SpawnGuitar_2(character)
     local Rig = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Skins.Killers.JohnDoe.AnnihilationJohnDoe:FindFirstChild("Rig")
@@ -1036,6 +1111,9 @@ for _, data in ipairs(buttonsData) do
 
         track:Play()
         currentAnim = track
+        
+        -- Start time sync for this emote
+        startAnimationSync(track, chosenAnim)
 
         if name == "InvIS" then
             track:Play(0)
