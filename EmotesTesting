@@ -122,47 +122,23 @@ end
 
 -- ANIMATION SYNC FUNCTION (100 STUDS DISTANCE)
 -- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
--- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
+-- ONE-TIME ANIMATION & AUDIO SYNC FUNCTION
 local function startAnimationSync(localTrack, targetAnimId)
-    if syncConnection then syncConnection:Disconnect() end
+    -- Clean up any lingering tasks
+    if syncConnection then 
+        syncConnection:Disconnect() 
+        syncConnection = nil 
+    end
 
-    syncConnection = RunService.RenderStepped:Connect(function()
-        if not localTrack or not localTrack.IsPlaying then
-            if syncConnection then
-                syncConnection:Disconnect()
-                syncConnection = nil
-            end
-            return
-        end
+    -- Run detection on the next frame to ensure tracks and sounds are initialized
+    task.defer(function()
+        if not localTrack or not localTrack.IsPlaying then return end
 
         local myChar = player.Character
         local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
         if not myHrp then return end
 
-        -- SMOOTH AUDIO SYNC (NO POPS)
-        if currentSound and currentSound.IsPlaying and currentSound.TimeLength > 0 and localTrack.Length > 0 then
-            local targetTime = localTrack.TimePosition % currentSound.TimeLength
-            local diff = targetTime - currentSound.TimePosition
-
-            -- Handle loop wrap-around
-            if diff < -currentSound.TimeLength / 2 then
-                diff = diff + currentSound.TimeLength
-            elseif diff > currentSound.TimeLength / 2 then
-                diff = diff - currentSound.TimeLength
-            end
-
-            -- If drift is huge, hard-seek (rare). Otherwise, smoothly alter playback speed
-            if math.abs(diff) > 0.25 then
-                currentSound.TimePosition = targetTime
-                currentSound.PlaybackSpeed = 1
-            elseif math.abs(diff) > 0.03 then
-                currentSound.PlaybackSpeed = math.clamp(1 + (diff * 0.5), 0.95, 1.05)
-            else
-                currentSound.PlaybackSpeed = 1
-            end
-        end
-
-        -- ANIMATION SYNC (100 STUDS)
+        -- Scan nearby players ONCE
         for _, otherPlayer in ipairs(Players:GetPlayers()) do
             if otherPlayer ~= player and otherPlayer.Character then
                 local otherHrp = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -171,17 +147,38 @@ local function startAnimationSync(localTrack, targetAnimId)
                 if otherHrp and otherHum then
                     local distance = (myHrp.Position - otherHrp.Position).Magnitude
                     if distance <= 100 then
+                        
+                        -- 1. Check for a matching sound playing nearby
+                        local foundNearbySound = false
+                        if currentSound then
+                            for _, descendant in ipairs(otherPlayer.Character:GetDescendants()) do
+                                if descendant:IsA("Sound") and descendant.IsPlaying and descendant.SoundId == currentSound.SoundId then
+                                    currentSound.TimePosition = descendant.TimePosition
+                                    foundNearbySound = true
+                                    break
+                                end
+                            end
+                        end
+
+                        -- 2. Check for a matching animation playing nearby
                         local animator = otherHum:FindFirstChildOfClass("Animator")
                         if animator then
                             for _, playingTrack in ipairs(animator:GetPlayingAnimationTracks()) do
                                 if playingTrack.Animation and playingTrack.Animation.AnimationId == targetAnimId then
-                                    if math.abs(localTrack.TimePosition - playingTrack.TimePosition) > 0.08 then
-                                        localTrack.TimePosition = playingTrack.TimePosition
+                                    localTrack.TimePosition = playingTrack.TimePosition
+                                    
+                                    -- Fallback: If no sound was found nearby, sync local sound to local anim
+                                    if currentSound and currentSound.IsPlaying and not foundNearbySound and currentSound.TimeLength > 0 then
+                                        currentSound.TimePosition = playingTrack.TimePosition % currentSound.TimeLength
                                     end
+                                    
+                                    -- Target found and synced once; exit detection completely
                                     return
                                 end
                             end
                         end
+
+                        if foundNearbySound then return end
                     end
                 end
             end
