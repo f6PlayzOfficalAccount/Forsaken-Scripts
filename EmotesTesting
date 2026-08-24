@@ -123,22 +123,29 @@ end
 -- ANIMATION SYNC FUNCTION (100 STUDS DISTANCE)
 -- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
 -- ONE-TIME ANIMATION & AUDIO SYNC FUNCTION
+-- ONE-TIME ANIMATION & AUDIO SYNC FUNCTION (WITH INITIAL RETRY WINDOW)
 local function startAnimationSync(localTrack, targetAnimId)
-    -- Clean up any lingering tasks
     if syncConnection then 
         syncConnection:Disconnect() 
         syncConnection = nil 
     end
 
-    -- Run detection on the next frame to ensure tracks and sounds are initialized
-    task.defer(function()
-        if not localTrack or not localTrack.IsPlaying then return end
+    local startTime = tick()
+    
+    syncConnection = RunService.RenderStepped:Connect(function()
+        -- Stop trying if the track stopped or if 0.5 seconds passed without finding anyone
+        if not localTrack or not localTrack.IsPlaying or (tick() - startTime) > 0.5 then
+            if syncConnection then
+                syncConnection:Disconnect()
+                syncConnection = nil
+            end
+            return
+        end
 
         local myChar = player.Character
         local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
         if not myHrp then return end
 
-        -- Scan nearby players ONCE
         for _, otherPlayer in ipairs(Players:GetPlayers()) do
             if otherPlayer ~= player and otherPlayer.Character then
                 local otherHrp = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -147,38 +154,29 @@ local function startAnimationSync(localTrack, targetAnimId)
                 if otherHrp and otherHum then
                     local distance = (myHrp.Position - otherHrp.Position).Magnitude
                     if distance <= 100 then
-                        
-                        -- 1. Check for a matching sound playing nearby
-                        local foundNearbySound = false
-                        if currentSound then
-                            for _, descendant in ipairs(otherPlayer.Character:GetDescendants()) do
-                                if descendant:IsA("Sound") and descendant.IsPlaying and descendant.SoundId == currentSound.SoundId then
-                                    currentSound.TimePosition = descendant.TimePosition
-                                    foundNearbySound = true
-                                    break
-                                end
-                            end
-                        end
-
-                        -- 2. Check for a matching animation playing nearby
                         local animator = otherHum:FindFirstChildOfClass("Animator")
                         if animator then
                             for _, playingTrack in ipairs(animator:GetPlayingAnimationTracks()) do
-                                if playingTrack.Animation and playingTrack.Animation.AnimationId == targetAnimId then
-                                    localTrack.TimePosition = playingTrack.TimePosition
+                                -- Compare AnimationId cleanly
+                                if playingTrack.Animation and (playingTrack.Animation.AnimationId == targetAnimId or playingTrack.Animation.AnimationId == tostring(targetAnimId)) then
                                     
-                                    -- Fallback: If no sound was found nearby, sync local sound to local anim
-                                    if currentSound and currentSound.IsPlaying and not foundNearbySound and currentSound.TimeLength > 0 then
+                                    -- 1. Snap Animation Time
+                                    localTrack.TimePosition = playingTrack.TimePosition
+
+                                    -- 2. Snap Audio Time once if active
+                                    if currentSound and currentSound.IsPlaying and currentSound.TimeLength > 0 then
                                         currentSound.TimePosition = playingTrack.TimePosition % currentSound.TimeLength
                                     end
-                                    
-                                    -- Target found and synced once; exit detection completely
+
+                                    -- 3. Disconnect immediately after snapping once!
+                                    if syncConnection then
+                                        syncConnection:Disconnect()
+                                        syncConnection = nil
+                                    end
                                     return
                                 end
                             end
                         end
-
-                        if foundNearbySound then return end
                     end
                 end
             end
