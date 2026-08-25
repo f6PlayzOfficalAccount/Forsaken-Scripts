@@ -1,0 +1,1361 @@
+--// GAME : FORSAKEN
+--// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED)
+--// Version 6.6
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local currentProp = {}
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local currentAnim
+local currentSound
+local loopConnection
+local autoWalkConnection = nil
+local speedTrackConnection = nil
+local actionId = 0
+
+-- Custom Randomization Tables
+local CustomRandomAnimations = {}
+local CustomRandomMusic = {}
+
+local function AddRandomAnims(emoteName, animList)
+    CustomRandomAnimations[emoteName] = animList
+end
+
+local function AddRandomMusic(emoteName, musicList)
+    CustomRandomMusic[emoteName] = musicList
+end
+
+local function getCharacter()
+    return player.Character or player.CharacterAdded:Wait()
+end
+
+-- CAMERA
+local function enableCamLock(character)
+    local head = character:FindFirstChild("Head")
+    if head then
+        camera.CameraSubject = head
+        camera.CameraType = Enum.CameraType.Custom
+    end
+end
+
+local function disableCamLock(character)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        camera.CameraSubject = humanoid
+        camera.CameraType = Enum.CameraType.Custom
+    end
+end
+
+-- HELPER TO CLEAN PROPS SAFELY
+local function clearCurrentProps()
+    if type(currentProp) == "table" then
+        for _, prop in ipairs(currentProp) do
+            if typeof(prop) == "Instance" then
+                prop:Destroy()
+            end
+        end
+    elseif typeof(currentProp) == "Instance" then
+        currentProp:Destroy()
+    end
+    currentProp = {}
+end
+
+-- STOP ALL
+local function stopAll()
+    actionId += 1
+    
+    clearCurrentProps()
+
+    local character = player.Character
+    if character then
+        local oldMewProp = character:FindFirstChild("MEW_HANDLE")
+        if oldMewProp then
+            oldMewProp:Destroy()
+        end
+    end
+
+    if currentAnim then
+        currentAnim:Stop()
+        currentAnim = nil
+    end
+
+    if currentSound then
+        currentSound:Stop()
+        currentSound:Destroy()
+        currentSound = nil
+    end
+
+    if loopConnection then
+        loopConnection:Disconnect()
+        loopConnection = nil
+    end
+
+    if autoWalkConnection then
+        autoWalkConnection:Disconnect()
+        autoWalkConnection = nil
+    end
+
+    if speedTrackConnection then
+        speedTrackConnection:Disconnect()
+        speedTrackConnection = nil
+    end
+
+    if character then
+        disableCamLock(character)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
+    end
+end
+
+-- SPEED TRACKER
+local function trackAnimationSpeed(track, humanoid, targetSpeed)
+    if speedTrackConnection then speedTrackConnection:Disconnect() end
+    speedTrackConnection = RunService.RenderStepped:Connect(function()
+        if track and track.IsPlaying and humanoid then
+            humanoid.WalkSpeed = targetSpeed
+        else
+            if speedTrackConnection then
+                speedTrackConnection:Disconnect()
+                speedTrackConnection = nil
+            end
+            if humanoid then humanoid.WalkSpeed = 16 end
+        end
+    end)
+end
+
+-- START LOOP (MULTI-STAGE INTRO -> LOOP EMOTE HANDLER)
+local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId, loopSoundId, isSpeedEmote, speedVal)
+    stopAll()
+    local myActionId = actionId
+    local character = getCharacter()
+    enableCamLock(character)
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+    -- Play Intro Animation
+    local introAnim = Instance.new("Animation")
+    introAnim.AnimationId = introAnimId
+    local introTrack = animator:LoadAnimation(introAnim)
+    introTrack.Priority = Enum.AnimationPriority.Action4
+    introTrack.Looped = false
+    introTrack:Play()
+    currentAnim = introTrack
+
+    -- Play Intro Sound
+    if introSoundId then
+        local sound = Instance.new("Sound")
+        sound.SoundId = introSoundId
+        sound.Parent = character:WaitForChild("HumanoidRootPart")
+        sound:Play()
+        currentSound = sound
+    end
+
+    if isSpeedEmote and speedVal then
+        trackAnimationSpeed(introTrack, humanoid, speedVal)
+    end
+
+    -- Transition to Loop Stage
+    task.delay(transitionDelay, function()
+        if actionId ~= myActionId then return end
+
+        if currentAnim then currentAnim:Stop() end
+        if currentSound then currentSound:Stop() currentSound:Destroy() end
+
+        local loopAnim = Instance.new("Animation")
+        loopAnim.AnimationId = loopAnimId
+        local loopTrack = animator:LoadAnimation(loopAnim)
+        loopTrack.Priority = Enum.AnimationPriority.Action4
+        loopTrack.Looped = true
+        loopTrack:Play()
+        currentAnim = loopTrack
+
+        if loopSoundId then
+            local sound = Instance.new("Sound")
+            sound.SoundId = loopSoundId
+            sound.Looped = true
+            sound.Parent = character:WaitForChild("HumanoidRootPart")
+            sound:Play()
+            currentSound = sound
+        end
+
+        if isSpeedEmote and speedVal then
+            trackAnimationSpeed(loopTrack, humanoid, speedVal)
+        end
+    end)
+end
+
+-- PROP SPAWNERS
+local function SpawnStopSign(character)
+    local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Emotes["#Stop"]:FindFirstChild("STOPSIGN")
+    if not raw then return end
+    local sign = raw:Clone()
+    sign.Parent = character
+    local motor = sign:FindFirstChildWhichIsA("Motor6D", true)
+    if motor then motor.Part0 = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand") end
+    return sign
+end
+
+local function SpawnSillyBillyMic(character)
+    local spawnedAssets = {}
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+
+    if leftArm then
+        -- Root Part named "MeshPart" with updated 0.001 size
+        local micPart = Instance.new("Part")
+        micPart.Name = "MeshPart"
+        micPart.Size = Vector3.new(0.001, 0.001, 0.001)
+        micPart.CanCollide = false
+        micPart.Anchored = false
+
+        -- Mesh Setup with updated 0.065 scale
+        local mesh = Instance.new("SpecialMesh")
+        mesh.Name = "Mesh"
+        mesh.MeshType = Enum.MeshType.FileMesh
+        mesh.MeshId = "rbxassetid://6537209405"
+        mesh.TextureId = "rbxassetid://6505895675"
+        mesh.Scale = Vector3.new(0.065, 0.065, 0.065)
+        mesh.Parent = micPart
+
+        -- CFrame offset relative to Left Arm
+        micPart.CFrame = leftArm.CFrame * CFrame.new(0, -1, -0.3)
+
+        -- WeldConstraint setup
+        local weld = Instance.new("WeldConstraint")
+        weld.Name = "WeldConstraint"
+        weld.Part0 = leftArm
+        weld.Part1 = micPart
+        weld.Parent = micPart
+
+        micPart.Parent = character
+        table.insert(spawnedAssets, micPart)
+    end
+
+    return spawnedAssets
+end
+
+
+local function ThePhoneHandle(character)
+    local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
+        and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes")
+        and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("ThePhone")
+        and game:GetService("ReplicatedStorage").Assets.Emotes.ThePhone:FindFirstChild("Phone")
+        
+    if not raw then return end
+
+    local PhoneH = raw:Clone()
+    PhoneH.Parent = character
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp and PhoneH:FindFirstChild("PhoneRoot") then
+        PhoneH.PhoneRoot.CFrame = hrp.CFrame
+        local weld = PhoneH.PhoneRoot:FindFirstChild("WeldConstraint") or Instance.new("WeldConstraint")
+        weld.Part0 = PhoneH.PhoneRoot
+        weld.Part1 = hrp
+        weld.Parent = PhoneH.PhoneRoot
+    end
+
+    return PhoneH
+end
+
+local function SpawnGuitar_1(character)
+    local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Emotes["#slayer"]:FindFirstChild("Handle")
+    if not raw then return end
+    local Guitar = raw:Clone()
+    Guitar.Parent = character
+    local motor = Guitar:FindFirstChildWhichIsA("Motor6D", true)
+    if motor then motor.Part0 = character:FindFirstChild("HumanoidRootPart") end
+    return Guitar
+end
+
+local function RightHand(character)
+    local raw = game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.RightHandle
+    if not raw then return end
+    
+    local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
+    local RightHandModel = raw:Clone()
+    RightHandModel.Parent = character
+    
+    if rightArm then
+        local armColor = rightArm.Color
+        for _, child in RightHandModel:GetDescendants() do
+            if child:IsA("BasePart") then
+                child.Color = armColor
+            end
+        end
+    end
+    
+    local motor = RightHandModel:FindFirstChildWhichIsA("Motor6D", true)
+    if motor and rightArm then 
+        motor.Part0 = rightArm 
+    end
+    
+    return RightHandModel
+end
+
+local function LoadSukunaAssets(character)
+	local assets = {
+		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.DismantleFX,
+		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.LeftHandle,
+		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.RightHandle,
+	}
+
+	local spawnedAssets = {}
+
+	for _, raw in assets do
+		if raw then
+			local clone = raw:Clone()
+			clone.Parent = character
+
+			if raw.Name == "LeftHandle" or raw.Name == "RightHandle" then
+				local side = (raw.Name == "LeftHandle") and "Left" or "Right"
+				local arm = character:FindFirstChild(side .. " Arm") or character:FindFirstChild(side .. "Hand")
+
+				if arm then
+					for _, child in clone:GetDescendants() do
+						if child:IsA("BasePart") then
+							child.Color = arm.Color
+						end
+					end
+
+					local motor = clone:FindFirstChildWhichIsA("Motor6D", true)
+					if motor then
+						motor.Part0 = arm
+					end
+				end
+			end
+
+			table.insert(spawnedAssets, clone)
+		end
+	end
+
+	return spawnedAssets
+end
+local function SpawnShucksAssets(character)
+    local spawnedAssets = {}
+
+    local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+
+    -- 1. BUILD SAW MODEL (Right Arm)
+    if rightArm then
+        local sawModel = Instance.new("Model")
+        sawModel.Name = "Saw"
+
+        -- Primary Root Part
+        local root = Instance.new("Part")
+        root.Name = "Root"
+        root.Size = Vector3.new(1.000, 2.000, 1.000)
+        root.Color = Color3.fromRGB(205, 205, 205)
+        root.Transparency = 1.00
+        root.CanCollide = false
+        root.Anchored = false
+        root.Parent = sawModel
+
+        -- Saw-Model Hand (Mounted on arm)
+        local hand = Instance.new("Part")
+        hand.Name = "Hand"
+        hand.Size = Vector3.new(1.062, 0.637, 1.062)
+        hand.Color = Color3.fromRGB(163, 162, 165)
+        hand.CanCollide = false
+        hand.Anchored = false
+        hand.Parent = sawModel
+
+        -- Connecting Bar (Links Hand to BuzzSaw)
+        local bar = Instance.new("Part")
+        bar.Name = "Bar"
+        bar.Shape = Enum.PartType.Cylinder
+        bar.Size = Vector3.new(0.833, 0.088, 0.143) -- Adjusted orientation for cylinder length
+        bar.Color = Color3.fromRGB(163, 162, 165)
+        bar.CanCollide = false
+        bar.Anchored = false
+        bar.Parent = sawModel
+
+        -- Spinning Blade
+        local buzzSaw = Instance.new("Part")
+        buzzSaw.Name = "BuzzSaw"
+        buzzSaw.Size = Vector3.new(1.038, 1.038, 0.519)
+        buzzSaw.Color = Color3.fromRGB(205, 205, 205)
+        buzzSaw.CanCollide = false
+        buzzSaw.Anchored = false
+        buzzSaw.Parent = sawModel
+
+        -- Blade Mesh
+        local mesh = Instance.new("SpecialMesh")
+        mesh.Name = "Mesh"
+        mesh.MeshType = Enum.MeshType.FileMesh
+        mesh.MeshId = "rbxassetid://74322089"
+        mesh.TextureId = "rbxassetid://74322092"
+        mesh.Scale = Vector3.new(1.038, 1.038, 0.519)
+        mesh.Offset = Vector3.new(0, 0, 0)
+        mesh.Parent = buzzSaw
+
+        -- Alignments Relative to Right Arm
+        root.CFrame = rightArm.CFrame
+        hand.CFrame = root.CFrame * CFrame.new(0, -0.719, 0)
+        
+        -- Position Bar bridging Hand (-0.719) down to BuzzSaw (-1.786)
+        bar.CFrame = root.CFrame * CFrame.new(0.031, -1.252, 0) * CFrame.Angles(0, 0, math.rad(90))
+        buzzSaw.CFrame = root.CFrame * CFrame.new(0.031, -1.786, 0)
+
+        -- Static Structural Welds
+        local rootWeld = Instance.new("WeldConstraint")
+        rootWeld.Name = "WeldConstraint"
+        rootWeld.Part0 = rightArm
+        rootWeld.Part1 = root
+        rootWeld.Parent = root
+
+        local handWeld = Instance.new("WeldConstraint")
+        handWeld.Name = "WeldConstraint"
+        handWeld.Part0 = root
+        handWeld.Part1 = hand
+        handWeld.Parent = hand
+
+        -- Weld Bar to Hand so it stays fixed as the connecting rod
+        local barWeld = Instance.new("WeldConstraint")
+        barWeld.Name = "WeldConstraint"
+        barWeld.Part0 = hand
+        barWeld.Part1 = bar
+        barWeld.Parent = bar
+
+        -- Motor6D Setup for BuzzSaw Spin
+        local sawMotor = Instance.new("Motor6D")
+        sawMotor.Name = "BuzzSaw"
+        sawMotor.Part0 = rightArm
+        sawMotor.Part1 = buzzSaw
+        sawMotor.C0 = CFrame.new(0.031, -1.786, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0)
+        sawMotor.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+        sawMotor.Parent = sawModel
+
+        -- Spin Connection
+        local spinConn
+        spinConn = RunService.RenderStepped:Connect(function(dt)
+            if sawModel and sawModel.Parent then
+                sawMotor.C0 = sawMotor.C0 * CFrame.Angles(0, 0, math.rad(1400 * dt))
+            else
+                spinConn:Disconnect()
+            end
+        end)
+
+        sawModel.Parent = character
+        table.insert(spawnedAssets, sawModel)
+    end
+
+    -- 2. SPAWN SUKUNA LEFT HANDLE (Left Arm)
+    local rawLeftHandle = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
+        and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes")
+        and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("Sukuna")
+        and game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna:FindFirstChild("LeftHandle")
+
+    if rawLeftHandle and leftArm then
+        local handleClone = rawLeftHandle:Clone()
+        handleClone.Name = "PlayerEmoteHand"
+        
+        for _, v in ipairs(handleClone:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Color = leftArm.Color
+            end
+        end
+
+        local motor = handleClone:FindFirstChildWhichIsA("Motor6D", true)
+        if motor then
+            motor.Part0 = leftArm
+        end
+
+        handleClone.Parent = character
+        table.insert(spawnedAssets, handleClone)
+    end
+
+    return spawnedAssets
+end
+
+
+
+
+local function SpawnGuitar_2(character)
+    local Rig = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Skins.Killers.JohnDoe.AnnihilationJohnDoe:FindFirstChild("Rig")
+    if not Rig or not Rig:FindFirstChild("Guitar") then return end
+    local Guitar2 = Rig.Guitar:Clone()
+    Guitar2.Parent = character
+    Guitar2.Name = "Guitar"
+    Guitar2.Transparency = 0
+    
+    local OriginalMotor
+    for _, v in ipairs(Rig:GetDescendants()) do
+        if v:IsA("Motor6D") and v.Part1 == Rig.Guitar then
+            OriginalMotor = v
+            break
+        end
+    end
+
+    if OriginalMotor then
+        local Motor = OriginalMotor:Clone()
+        local Part0 = character:FindFirstChild(OriginalMotor.Part0.Name)
+        if Part0 then
+            Motor.Part0 = Part0
+            Motor.Part1 = Guitar2
+            Motor.Parent = Part0
+        end
+    end
+    return Guitar2
+end
+
+local function SpawnSeal(character)
+    local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Emotes.SealPat:FindFirstChild("LeftHandle")
+    if not raw then return end
+    local Handle = raw:Clone()
+    Handle.Parent = character
+    Handle.Name = "LeftHandle"
+    Handle.Transparency = 1
+
+    local LeftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+    if LeftArm then
+        local Motor6D = Instance.new("Motor6D")
+        Motor6D.Name = "Seal"
+        Motor6D.C0 = CFrame.new(0, -0.851, 0)
+        Motor6D.Part0 = LeftArm
+        Motor6D.Part1 = Handle
+        Motor6D.Parent = LeftArm
+    end
+    return Handle
+end
+
+local function SpawnAuraMonster(character)
+    local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Emotes["#AuraMonster"]:FindFirstChild("AuraMonster")
+    if not raw then return end
+    local aura = raw:Clone()
+    aura.Parent = character
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if root then
+        if aura:FindFirstChild("BIGAURA") and aura.BIGAURA:FindFirstChild("VFXPartMotor") then aura.BIGAURA.VFXPartMotor.Part0 = root end
+        if aura:FindFirstChild("StepPart1") and aura.StepPart1:FindFirstChild("Step1Motor") then aura.StepPart1.Step1Motor.Part0 = root end
+        if aura:FindFirstChild("StepPart2") and aura.StepPart2:FindFirstChild("Step2Motor") then aura.StepPart2.Step2Motor.Part0 = root end
+    end
+    if aura:FindFirstChild("BIGAURA") then
+        for _, v in ipairs(aura.BIGAURA:GetChildren()) do
+            if v:IsA("ParticleEmitter") then v.Enabled = true end
+        end
+    end
+    return aura
+end
+
+local function SpawnMewEmote(character)
+    local emoteTemplate = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
+        and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes") 
+        and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("#MewMew") 
+        and game:GetService("ReplicatedStorage").Assets.Emotes["#MewMew"]:FindFirstChild("MEWEMOTE")
+
+    --if not emoteTemplate then return {} end
+
+    local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+    local primaryPart = character.PrimaryPart or character:FindFirstChild("HumanoidRootPart")
+
+    if not (rightArm and leftArm and primaryPart) then return {} end
+
+    local clonedEmote = emoteTemplate:Clone()
+    clonedEmote.Name = "MEW_HANDLE"
+
+    -- Assign Part0 targets
+    local rightLight = clonedEmote:FindFirstChild("RightLight")
+    if rightLight and rightLight:FindFirstChild("RIGHTWELD") then
+        rightLight.RIGHTWELD.Part0 = rightArm
+    end
+
+    local leftLight = clonedEmote:FindFirstChild("LeftLight")
+    if leftLight and leftLight:FindFirstChild("LEFTWELD") then
+        leftLight.LEFTWELD.Part0 = leftArm
+    end
+
+    local nothingWeld = clonedEmote:FindFirstChild("NOTHINGWELD", true) -- Recursive search
+    if nothingWeld then
+        nothingWeld.Part0 = primaryPart
+    end
+
+    clonedEmote.Parent = character
+
+    -- Must return a table array so currentProp cleanup loops don't throw errors
+    return {clonedEmote}
+end
+
+local function SpawnMewEmote2(character)
+    return SpawnMewEmote(character)
+end
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "XenoGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+screenGui.AncestryChanged:Connect(function(_, parent)
+    if not parent then stopAll() end
+end)
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(0, 160, 0.5, 0)
+scrollFrame.Position = UDim2.new(1, -180, 0.02, 0)
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+scrollFrame.BorderSizePixel = 0
+scrollFrame.Parent = screenGui
+
+local CornerForScrool = Instance.new("UICorner")
+CornerForScrool.Parent = scrollFrame
+local StrokeCornerForFrame = Instance.new("UIStroke")
+StrokeCornerForFrame.Parent = scrollFrame
+StrokeCornerForFrame.Thickness = 3
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,5)
+layout.Parent = scrollFrame
+
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    scrollFrame.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+end)
+
+-- INFO / DESCRIPTION POPUP MENU
+local infoFrame = Instance.new("Frame")
+infoFrame.Name = "InfoFrame"
+infoFrame.Size = UDim2.new(0, 420, 0, 260)
+infoFrame.Position = UDim2.new(0.5, -210, 0.5, -130)
+infoFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+infoFrame.BackgroundTransparency = 0.6
+infoFrame.BorderSizePixel = 0
+infoFrame.Visible = false
+infoFrame.ZIndex = 10
+infoFrame.Parent = screenGui
+
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 12)
+infoCorner.Parent = infoFrame
+
+local infoStroke = Instance.new("UIStroke")
+infoStroke.Color = Color3.fromRGB(0, 170, 255)
+infoStroke.Thickness = 2
+infoStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+infoStroke.Parent = infoFrame
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -28, 0, 5)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 22
+closeBtn.ZIndex = 12
+closeBtn.Parent = infoFrame
+
+local infoImage = Instance.new("ImageLabel")
+infoImage.Size = UDim2.new(0, 100, 0, 100)
+infoImage.Position = UDim2.new(0, 10, 0, 10)
+infoImage.BackgroundTransparency = 1
+infoImage.BorderSizePixel = 0
+infoImage.ZIndex = 11
+infoImage.Parent = infoFrame
+
+local nameLabel = Instance.new("TextLabel")
+nameLabel.Size = UDim2.new(0, 270, 0, 25)
+nameLabel.Position = UDim2.new(0, 120, 0, 5)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text = "Emote Name"
+nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+nameLabel.Font = Enum.Font.SourceSansBold
+nameLabel.TextSize = 20
+nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+nameLabel.ZIndex = 11
+nameLabel.Parent = infoFrame
+
+local nameStroke = Instance.new("UIStroke")
+nameStroke.Color = Color3.fromRGB(0, 0, 0)
+nameStroke.Thickness = 2
+nameStroke.Parent = nameLabel
+
+local descLabel = Instance.new("TextLabel")
+descLabel.Size = UDim2.new(0, 270, 0, 55)
+descLabel.Position = UDim2.new(0, 120, 0, 30)
+descLabel.BackgroundTransparency = 1
+descLabel.Text = "Description goes here..."
+descLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+descLabel.Font = Enum.Font.SourceSans
+descLabel.TextSize = 16
+descLabel.TextWrapped = true
+descLabel.TextYAlignment = Enum.TextYAlignment.Top
+descLabel.TextXAlignment = Enum.TextXAlignment.Left
+descLabel.ZIndex = 11
+descLabel.Parent = infoFrame
+
+local descStroke = Instance.new("UIStroke")
+descStroke.Color = Color3.fromRGB(0, 0, 0)
+descStroke.Thickness = 1.5
+descStroke.Parent = descLabel
+
+local viewportFrame = Instance.new("ViewportFrame")
+viewportFrame.Size = UDim2.new(1, -20, 0, 160)
+viewportFrame.Position = UDim2.new(0, 10, 0, 90)
+viewportFrame.BackgroundTransparency = 1
+viewportFrame.ZIndex = 11
+viewportFrame.Parent = infoFrame
+
+local viewportWorldModel = nil
+local viewportCam = nil
+local viewportAnimTrack = nil
+local viewportSound = nil
+local viewportRenderConn = nil
+local viewportProp = nil
+
+local function closeInfoMenu()
+    infoFrame.Visible = false
+    if viewportRenderConn then viewportRenderConn:Disconnect() end
+    if viewportSound then viewportSound:Destroy() viewportSound = nil end
+    
+    if type(viewportProp) == "table" then
+        for _, p in ipairs(viewportProp) do if typeof(p) == "Instance" then p:Destroy() end end
+    elseif typeof(viewportProp) == "Instance" then 
+        viewportProp:Destroy() 
+    end
+    viewportProp = nil
+    
+    if viewportWorldModel then viewportWorldModel:Destroy() viewportWorldModel = nil end
+end
+
+closeBtn.MouseButton1Click:Connect(closeInfoMenu)
+
+local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, customIcon, customDesc)
+    closeInfoMenu()
+    
+    infoImage.Image = customIcon or imageId or "rbxassetid://0"
+    nameLabel.Text = name
+    descLabel.Text = customDesc or "No description provided for " .. name .. "."
+
+    viewportWorldModel = Instance.new("WorldModel")
+    viewportWorldModel.Parent = viewportFrame
+
+    local char = getCharacter()
+    char.Archivable = true
+    local charClone = char:Clone()
+    char.Archivable = false
+
+    for _, obj in ipairs(charClone:GetDescendants()) do
+        if obj:IsA("Motor6D") then
+            if obj.Name == "Neck" then
+                obj.C0 = CFrame.new(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+                obj.C1 = CFrame.new(0, -0.5, 0, -1, 0, 0, 0, 0, 1, 0, 1, -0)
+            elseif obj.Name == "Waist" or obj.Name == "RootJoint" then
+                obj.Transform = CFrame.identity
+            end
+        elseif obj:IsA("BasePart") then
+            obj.Velocity = Vector3.zero
+            obj.RotVelocity = Vector3.zero
+        end
+    end
+
+    charClone:SetPrimaryPartCFrame(CFrame.new(0, 0, 0))
+    charClone.Parent = viewportWorldModel
+
+    if name == "Stop" then viewportProp = SpawnStopSign(charClone) end
+    if name == "seal (Pets)" then viewportProp = SpawnSeal(charClone) end
+    if name == "Guitar (JSAB John Doe)" then viewportProp = SpawnGuitar_2(charClone) end
+    if name == "Slayerrr" then viewportProp = SpawnGuitar_1(charClone) end
+    if name == "#MonsterAura" then viewportProp = SpawnAuraMonster(charClone) end
+    if name == "Mewers Live" then viewportProp = SpawnMewEmote(charClone) end
+    if name == "Mewers Live2" then viewportProp = SpawnMewEmote2(charClone) end
+    if name == "Old The Phone" then viewportProp = ThePhoneHandle(charClone) end
+    if name == "No" then viewportProp = RightHand(charClone) end
+    if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_7(shucks)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
+        viewportProp = LoadSukunaAssets(charClone) 
+    end
+    if name == "EmoteNameForSillyBilly" then
+        viewportProp = SpawnSillyBillyMic(charClone)
+    end
+
+    local hrp = charClone:FindFirstChild("HumanoidRootPart") or charClone.PrimaryPart
+    if hrp then
+        viewportCam = Instance.new("Camera")
+        viewportCam.CFrame = CFrame.new(Vector3.new(0, 0, -5.5), Vector3.new(0, 0, 0))
+        viewportFrame.CurrentCamera = viewportCam
+        viewportCam.Parent = viewportFrame
+
+        local rotAngle = 0
+        viewportRenderConn = RunService.RenderStepped:Connect(function(dt)
+            rotAngle += dt * 0.6
+            local camPos = Vector3.new(math.sin(rotAngle) * 5.5, 0.5, math.cos(rotAngle) * 5.5)
+            viewportCam.CFrame = CFrame.new(camPos, Vector3.new(0, 0, 0))
+        end)
+    end
+
+    local hum = charClone:FindFirstChildOfClass("Humanoid")
+    if hum then
+        local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+        
+        local chosenAnim = animId
+        if CustomRandomAnimations[name] then
+            local list = CustomRandomAnimations[name]
+            chosenAnim = list[math.random(#list)]
+        end
+
+        if chosenAnim then
+            task.defer(function()
+                local animObj = Instance.new("Animation")
+                animObj.AnimationId = chosenAnim
+                viewportAnimTrack = animator:LoadAnimation(animObj)
+                viewportAnimTrack.Priority = Enum.AnimationPriority.Action4
+                viewportAnimTrack.Looped = (loopanim == true or loopanim == nil)
+                viewportAnimTrack:Play()
+            end)
+        end
+    end
+
+    local chosenSound = soundId
+    if CustomRandomMusic[name] then
+        local list = CustomRandomMusic[name]
+        chosenSound = list[math.random(#list)]
+    end
+
+    if name == "Emote_6(SillyBilly)" then
+        local Sounds = {"rbxassetid://77601084987544", "rbxassetid://120176009143091"}
+        chosenSound = Sounds[math.random(#Sounds)]
+    end
+    if name == "No" then
+        local Sounds = {"rbxassetid://2781528288", "rbxassetid://2571949879", "rbxassetid://739162051", "rbxassetid://1272001139", "rbxassetid://6975494962", "rbxassetid://5627724798"}
+        chosenSound = Sounds[math.random(#Sounds)]
+    end
+    if name == "Emote_1(Gangnam)" then
+        local Sounds = {"rbxassetid://121721906007526", "rbxassetid://100866147198228","rbxassetid://73136812934449"}
+        chosenSound = Sounds[math.random(#Sounds)]
+    end
+
+    if chosenSound then
+        viewportSound = Instance.new("Sound")
+        viewportSound.SoundId = chosenSound
+        viewportSound.Looped = not SongLoop
+        viewportSound.Parent = infoFrame
+        viewportSound:Play()
+    end
+
+    infoFrame.Visible = true
+end
+
+-- BUTTONS DATA
+local buttonsData = {
+    {"Emote_1(Gangnam)", "rbxassetid://108308837970067", nil, nil, nil, false, "rbxassetid://133166601563649", "Classic Gangnam style dance!"},
+    {"Emote_2(Pr3ttyprinc3ss)", "rbxassetid://85315044663872", nil, nil, nil, false, nil, "Pretty Princess emote."},
+    {"Mewers Live", "rbxassetid://80075529965321", "rbxassetid://97000870772786", nil, true, false, "rbxassetid://133140502034432", "Mewers Live special emote with prop lights!"},
+    {"Mewers Live2", "rbxassetid://80075529965321", "rbxassetid://77333249598847", nil, true, false, "rbxassetid://133140502034432", "Mewers Live special emote with prop lights!"},
+    {"Release The Ghouls","rbxassetid://122400298085954","rbxassetid://140379868363274",nil,nil,false},
+    {"Honey", "rbxassetid://98059146040576", "rbxassetid://75850411329107", true, true, false, "rbxassetid://93387041641721", "Honey emote!"},
+    {"Old The Phone (NO HANDLES)","rbxassetid://112887456905366","rbxassetid://107281579144976",nil,nil,true,"rbxassetid://91657126735088"},
+    {"Old The Phone","rbxassetid://112887456905366","rbxassetid://107281579144976",nil,nil,true,"rbxassetid://91657126735088"},
+    {"No","rbxassetid://114582100709529",nil, true,false,nil,"rbxassetid://101973569734115","NUH UH"},
+    {"JAWLINE SHOW","rbxassetid://74204930667265","rbxassetid://121488248566083",true,false,nil,"rbxassetid://119506885077177","Bye bye (bye bye)"},
+    {"Old Locked","rbxassetid://77920404652731","rbxassetid://134957854576218"},
+    {"Old Chronoshift", "rbxassetid://95008278201478", "rbxassetid://137501116290172"},
+    {"#Split", "rbxassetid://72820840589864", "rbxassetid://76228459199673"},
+    {"Mashle", "rbxassetid://87805936274997", "rbxassetid://75850411329107"},
+    {"Neighbor", "rbxassetid://138666500395088", "rbxassetid://138228703127242"},
+    {"Bang Bang Bang", "rbxassetid://87633945335192", "rbxassetid://117029517199208"},
+    {"Adrenaline", "rbxassetid://97386332584858", "rbxassetid://109123425990151",nil,nil,true,"rbxassetid://135883870615399","Grabben a shot."},
+    {"Circus1", "rbxassetid://103229907582024", "rbxassetid://90501066371651"},
+    {"Circus2", "rbxassetid://103229907582024", "rbxassetid://139409280325680"},
+    {"Competetnt", "rbxassetid://73853033197617", "rbxassetid://113981956544732"},
+    {"SPOOKEH MONTHHH", "rbxassetid://137568898491837", "rbxassetid://1838457617"},
+    {"WITHfRIENDULTRA","rbxassetid://129080033316229","rbxassetid://104252762288160"},
+    {"Excuse Me Tiktok","rbxassetid://73426893697661","rbxassetid://86374135384869",nil,nil,true,"rbxassetid://117412191148848","tiktok edit"},
+    {"Mafiaso Snap","rbxassetid://132946177664650","rbxassetid://128566549159266", nil, nil, true},
+    {"Miku Dance","rbxassetid://83885354320875","rbxassetid://79963618069006"},
+    {"COLAAAA", "rbxassetid://95229806943827", nil, nil, false},
+    {"COLAAAAA", "rbxassetid://95229806943827", true, false},
+    {"Respawn2time", "rbxassetid://117339039533356", "rbxassetid://100981628806546", true,false},
+    {"2TStab", "rbxassetid://100725497418533", "rbxassetid://96032371062643", true,false},
+    {"Lunge","rbxassetid://97024645987283","rbxassetid://12222208",true,true},
+    {"OldHAKRI (Boomer Hakari Dance)","rbxassetid://138019937280193", "rbxassetid://88477898725659",nil,nil,true,"rbxassetid://124587965197013","\"For 4 minutes and 11 seconds, Hakari is effectively immortal!\""},
+    {"Campana","rbxassetid://96618767275101","rbxassetid://89115265536079",false,true},
+    {"SprayWipe","rbxassetid://98708147177657","rbxassetid://119756289563014"},
+    {"Thang","rbxassetid://118934238201261",nil},
+    {"ShedEat","rbxassetid://121781457295101",nil,true,false},
+    {"CCgirls","rbxassetid://121768360244671","rbxassetid://93139857397485"},
+    {"Stop","rbxassetid://125856196320655",nil,nil,nil,true,"rbxassetid://136966343037884","STOP"},
+    {"#MonsterAura","rbxassetid://134305747955119","rbxassetid://116137438955705", nil, nil, true,"rbxassetid://83727846721111","\"HAPPY BIRTHDAY DANIEL!!!\""},
+    {"Cory Dance","rbxassetid://132103483261527","rbxassetid://78302710217332",nil,true},
+    {"Homeless Man Defense","rbxassetid://134721295928800","rbxassetid://123335139610703",nil,true},
+    {"Kawaii","rbxassetid://101183171353021","rbxassetid://78302710217332",nil,true},
+    {"Lag Train","rbxassetid://106194914321772","rbxassetid://76993148148015",nil,true},
+    {"Number","rbxassetid://77708670523844","rbxassetid://78302710217332",nil,true},
+    {"Number new","rbxassetid://77708670523844","rbxassetid://129434597172849",nil,true},
+    {"Zesty Sturdy","rbxassetid://116164572233278","rbxassetid://78302710217332",nil,true},
+    {"Pon Pon","rbxassetid://97364431357573","rbxassetid://78302710217332"},
+    {"Jerking it","rbxassetid://72042024","rbxassetid://108553856293180",nil,true},
+    {"DROPKICKKKK 20 20 20","rbxassetid://123019923277556",nil},
+    {"invincible wobbly animation","rbxassetid://112852041799029","rbxassetid://108168734962944",nil,nil,true,"rbxassetid://127378040397253","Invinsible Wobble Animation"},
+    {"Taunt_1","rbxassetid://139761605950232","rbxassetid://6380285152",true,false},
+    {"Taunt_2","rbxassetid://132499705631268","rbxassetid://6380285152",true,false},
+    {"Taunt_3","rbxassetid://85634134313791","rbxassetid://6380285152",true,false},
+    {"Taunt_4","rbxassetid://92349176402978","rbxassetid://6380285152",true,false},
+    {"Taunt_5","rbxassetid://90380188891651","rbxassetid://6380285152",true,false},
+    {"Taunt_6","rbxassetid://111625402233109","rbxassetid://6380285152",true,false},
+    {"Taunt_7","rbxassetid://115129110616702","rbxassetid://6380285152",true,true},
+    {"Taunt_LADS","rbxassetid://115129110616702","rbxassetid://6380285152",true,true},
+    {"Taunt_8","rbxassetid://104338237496886","rbxassetid://6380285152",true,false},
+    {"Taunt_9","rbxassetid://97384970296994","rbxassetid://6380285152",true,false},
+    {"Taunt_10","rbxassetid://120131819550603","rbxassetid://6380285152",true,false},
+    {"Taunt_11","rbxassetid://86743654961117","rbxassetid://6380285152",true,false},
+    {"Taunt_11ButLoop","rbxassetid://86743654961117","rbxassetid://6380285152",true,true},
+    {"Taunt_12","rbxassetid://139352366494091","rbxassetid://6380285152",true,false},
+    {"Lonely / HakariV2", "rbxassetid://135096417373947", "rbxassetid://121854649978156"},
+    {"Tuffy", "rbxassetid://81985358916638", "rbxassetid://76634048411703"},
+    {"TooExcited", "rbxassetid://77440242026940", "rbxassetid://93956212044980",nil,nil,true,"rbxassetid://133028560346941","That boy too excited to run a fade"},
+    {"67", "rbxassetid://132850449051536", "rbxassetid://102352876557356",nil,nil,true,"rbxassetid://101270881902964","six seven is mainstream"},
+    {"Slayerrr", "rbxassetid://117708669782810", "rbxassetid://1843497734",nil,nil,true,"rbxassetid://135883870615399","I\'m slayinggg"},
+    {"Guitar (JSAB John Doe)", "rbxassetid://77434400165211", "rbxassetid://101986282901846", true,false},
+    {"Emote_3(Suter Fudge)", "rbxassetid://87482480949358", "rbxassetid://132297506693854",true , false },
+    {"Emote_4(TickTock)", "rbxassetid://118204083671442", "rbxassetid://79383274437776"},
+    {"Emote_4(TickTock) A2", "rbxassetid://118204083671442", "rbxassetid://104213462628762"},
+    {"Emote_5(MissTheQuiet)", "rbxassetid://100986631322204", "rbxassetid://131936418953291"},
+    {"Ko-ma Dio da", "rbxassetid://85856303945173", "rbxassetid://88954959076192"},
+    {"seal (Pets)", "rbxassetid://139954441136415", "rbxassetid://123571142022763",nil,nil,false,"rbxassetid://4947123931","Gyu!"},
+    {"Soy GUEST 1337 RUN", "rbxassetid://73502073176819", nil},
+    {"Emote_6(SillyBilly)", "rbxassetid://107464355830477", nil,true,false},
+    {"Emote_7(shucks)", "rbxassetid://74238051754912", "rbxassetid://123236721947419",true,false},
+    {"Emote_8(Mezmersizer)", "rbxassetid://102332849201255", nil},
+    {"Mezmersizer New-Old Audio", "rbxassetid://102332849201255", "rbxassetid://71934965392436"},
+    {"Emote_9(Penquin)", "rbxassetid://132087606887347", nil},
+    {"Emote_10(macarena)", "rbxassetid://99366472605758", nil},
+    {"Emote_11(ChickenNom)", "rbxassetid://95127225490093", "rbxassetid://97538785569799",nil,nil,true,"rbxassetid://93387041641721"},
+    {"GenAnim", "rbxassetid://130355934640695", nil},
+    {"1x1x1x1StunStart", "rbxassetid://96642629473615", nil},
+    {"StunnedAnim(Noli)", "rbxassetid://122580527125278", nil}
+}
+
+for _, data in ipairs(buttonsData) do
+    local name, animId, soundId, SongLoop, loopanim, isSpeedEmote, customIcon, customDesc = unpack(data)
+    
+    local containerFrame = Instance.new("Frame")
+    containerFrame.Name = name .. "_Container"
+    containerFrame.Size = UDim2.new(1, -10, 0, 50)
+    containerFrame.BackgroundColor3 = Color3.fromRGB(0, 110, 125)
+    containerFrame.BorderSizePixel = 0
+    containerFrame.Parent = scrollFrame
+
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 6)
+    frameCorner.Parent = containerFrame
+
+    local frameStroke = Instance.new("UIStroke")
+    frameStroke.Color = Color3.fromRGB(0, 160, 180)
+    frameStroke.Thickness = 2
+    frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    frameStroke.Parent = containerFrame
+
+    local btn = Instance.new("TextButton")
+    btn.Name = "TextButton"
+    btn.Size = UDim2.new(1, -54, 1, -8)
+    btn.Position = UDim2.new(0, 4, 0, 4)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = name
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    btn.Parent = containerFrame
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = btn
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    })
+    gradient.Rotation = 45
+    gradient.Parent = btn
+
+    local imgBtn = Instance.new("ImageButton")
+    imgBtn.Name = "ImageButton"
+    imgBtn.Size = UDim2.new(0, 42, 0, 42)
+    imgBtn.Position = UDim2.new(1, -46, 0, 4)
+    imgBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+    imgBtn.Image = customIcon or "rbxassetid://0"
+    imgBtn.Parent = containerFrame
+
+    local imgCorner = Instance.new("UICorner")
+    imgCorner.CornerRadius = UDim.new(0, 4)
+    imgCorner.Parent = imgBtn
+
+    local aspectConstraint = Instance.new("UIAspectRatioConstraint")
+    aspectConstraint.AspectRatio = 1
+    aspectConstraint.DominantAxis = Enum.DominantAxis.Height
+    aspectConstraint.Parent = imgBtn
+
+    local infoIconBtn = Instance.new("TextButton")
+    infoIconBtn.Name = "InfoIconButton"
+    infoIconBtn.Size = UDim2.new(0, 16, 0, 16)
+    infoIconBtn.Position = UDim2.new(1, -16, 1, -16)
+    infoIconBtn.BackgroundTransparency = 1
+    infoIconBtn.Text = "|||"
+    infoIconBtn.TextColor3 = Color3.fromRGB(30, 30, 30)
+    infoIconBtn.Font = Enum.Font.SourceSansBold
+    infoIconBtn.TextSize = 11
+    infoIconBtn.ZIndex = 10
+    infoIconBtn.Parent = imgBtn
+
+    infoIconBtn.MouseButton1Click:Connect(function()
+        openInfoMenu(name, customIcon, animId, soundId, SongLoop, loopanim, customIcon, customDesc)
+    end)
+
+    local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local normalSize = UDim2.new(1, -10, 0, 50)
+    local hoverSize = UDim2.new(1, -4, 0, 54)
+
+    local function onHover() TweenService:Create(containerFrame, tweenInfo, {Size = hoverSize}):Play() end
+    local function onLeave() TweenService:Create(containerFrame, tweenInfo, {Size = normalSize}):Play() end
+
+    containerFrame.MouseEnter:Connect(onHover)
+    containerFrame.MouseLeave:Connect(onLeave)
+    btn.MouseEnter:Connect(onHover)
+    btn.MouseLeave:Connect(onLeave)
+
+    local function executeEmote()
+        local character = getCharacter()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return end
+
+        stopAll()
+
+        if string.find(name, "Stun") then
+            disableCamLock(character)
+        else
+            enableCamLock(character)
+        end
+
+        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+        if name == "WITHfRIENDULTRA" then
+            humanoid.WalkSpeed = 10
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            autoWalkConnection = RunService.Heartbeat:Connect(function()
+                if character and humanoid and hrp then
+                    humanoid:MoveTo(hrp.Position + (hrp.CFrame.LookVector * 5))
+                end
+            end)
+        end
+
+        if name == "Excuse Me Tiktok" then
+            humanoid.WalkSpeed = 10
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            autoWalkConnection = RunService.Heartbeat:Connect(function()
+                if character and humanoid and hrp then
+                    humanoid:MoveTo(hrp.Position + (hrp.CFrame.LookVector * 4))
+                end
+            end)
+        end
+
+        -- MULTI-STAGE LOOP EMOTES
+        if name == "Thang" then
+            StartLoop(animId, "rbxassetid://82873867536518", 3.735, "rbxassetid://126364830742123", "rbxassetid://122394094782505", isSpeedEmote, nil)
+            return
+        end
+
+        if name == "DROPKICKKKK 20 20 20" then
+            StartLoop(animId, "rbxassetid://4953447383", 0.40, "rbxassetid://123345437821399", "rbxassetid://101232891446544", isSpeedEmote, nil)
+            return
+        end
+
+        local chosenAnim = animId
+        if CustomRandomAnimations[name] then
+            local list = CustomRandomAnimations[name]
+            chosenAnim = list[math.random(#list)]
+        end
+
+        local anim = Instance.new("Animation")
+        anim.AnimationId = chosenAnim
+
+        local track = animator:LoadAnimation(anim)
+        track.Priority = Enum.AnimationPriority.Action4
+        track.Looped = (loopanim == true or loopanim == nil)
+
+        track:Play()
+        currentAnim = track
+
+        if name == "InvIS" then
+            track:Play(0)
+            track.TimePosition = 0
+            track:AdjustSpeed(0)
+        end
+
+        if isSpeedEmote == true then
+            if name == "Mafiaso Snap" then
+                trackAnimationSpeed(track, humanoid, 5)
+            elseif name == "#MonsterAura" then
+                trackAnimationSpeed(track, humanoid, 2.5)
+            end
+        end
+
+        if name == "Stop" then currentProp = {SpawnStopSign(character)} end
+        if name == "seal (Pets)" then currentProp = {SpawnSeal(character)} end
+        if name == "Guitar (JSAB John Doe)" then currentProp = {SpawnGuitar_2(character)} end
+        if name == "Slayerrr" then currentProp = {SpawnGuitar_1(character)} end
+        if name == "#MonsterAura" then currentProp = {SpawnAuraMonster(character)} end
+        if name == "Mewers Live" or name == "Mewers Live2" then currentProp = {SpawnMewEmote(character)} end
+        if name == "Old The Phone" then currentProp = {ThePhoneHandle(character)} end
+        if name == "No" then currentProp = {RightHand(character)} end
+        if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" --[[or name == "Emote_7(shucks)"]] or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
+            currentProp = LoadSukunaAssets(character) 
+        end
+        if name == "Emote_6(SillyBilly)" then -- Replace with exact emote name string
+            currentProp = SpawnSillyBillyMic(character)
+        end
+        if name == "Emote_7(shucks)" then
+            currentProp = SpawnShucksAssets(character)
+        end
+        
+        local chosenSound = soundId
+        if CustomRandomMusic[name] then
+            local list = CustomRandomMusic[name]
+            chosenSound = list[math.random(#list)]
+        end
+
+        if name == "Emote_6(SillyBilly)" then
+            local Sounds = {"rbxassetid://77601084987544", "rbxassetid://120176009143091"}
+            chosenSound = Sounds[math.random(#Sounds)]
+        end
+        if name == "No" then
+            local Sounds = {"rbxassetid://2781528288", "rbxassetid://2571949879", "rbxassetid://739162051", "rbxassetid://1272001139", "rbxassetid://6975494962", "rbxassetid://5627724798"}
+            chosenSound = Sounds[math.random(#Sounds)]
+        end
+        if name == "Emote_1(Gangnam)" then
+            local Sounds = {"rbxassetid://121721906007526", "rbxassetid://100866147198228","rbxassetid://73136812934449"}
+            chosenSound = Sounds[math.random(#Sounds)]
+        end
+
+        if chosenSound then
+            local sound = Instance.new("Sound")
+            sound.SoundId = chosenSound
+            sound.Looped = not SongLoop
+            sound.Parent = character:WaitForChild("HumanoidRootPart")
+            
+            if name == "Emote_3(Suter Fudge)" then
+                sound.Volume = 3.25
+            else
+                sound.Volume = 0.9
+            end
+            sound:Play()
+            currentSound = sound
+        end
+
+        if loopanim == false then
+            task.wait(0.5)
+            track.Stopped:Wait()
+            stopAll()
+        end
+    end
+
+    btn.MouseButton1Click:Connect(executeEmote)
+    imgBtn.MouseButton1Click:Connect(executeEmote)
+    containerFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            executeEmote()
+        end
+    end)
+end
+
+-- SEARCH BAR
+local searchBox = Instance.new("TextBox")
+searchBox.Size = UDim2.new(0, 160, 0, 30)
+searchBox.Position = UDim2.new(1, -180, 0.53, 0)
+searchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+searchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+searchBox.PlaceholderText = "Search..."
+searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+searchBox.Text = ""
+searchBox.ClearTextOnFocus = false
+searchBox.Font = Enum.Font.SourceSans
+searchBox.TextSize = 16
+searchBox.Parent = screenGui
+
+Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 6)
+
+local StrokeSearch = Instance.new("UIStroke")
+StrokeSearch.Color = Color3.fromRGB(0, 170, 255)
+StrokeSearch.Thickness = 1.5
+StrokeSearch.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+StrokeSearch.Parent = searchBox
+
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local searchText = string.lower(searchBox.Text)
+    for _, child in ipairs(scrollFrame:GetChildren()) do
+        if child:IsA("Frame") then
+            local textBtn = child:FindFirstChild("TextButton")
+            if textBtn then
+                child.Visible = (searchText == "" or string.find(string.lower(textBtn.Text), searchText) ~= nil)
+            end
+        end
+    end
+end)
+
+-- STOP BUTTON
+local stopBtn = Instance.new("TextButton")
+stopBtn.Size = UDim2.new(0, 160, 0, 40)
+stopBtn.Position = UDim2.new(1, -180, 0.585, 0)
+stopBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+stopBtn.Text = "STOP"
+stopBtn.Font = Enum.Font.SourceSansBold
+stopBtn.TextSize = 18
+stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopBtn.Parent = screenGui
+
+Instance.new("UICorner", stopBtn).CornerRadius = UDim.new(0, 6)
+stopBtn.MouseButton1Click:Connect(stopAll)
+
+-- SOCIAL MENU
+local linkButton = Instance.new("TextButton")
+linkButton.Size = UDim2.new(0, 160, 0, 40)
+linkButton.Position = UDim2.new(1, -180, 0.02, scrollFrame.AbsoluteSize.Y + 92)
+linkButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+linkButton.Text = "🔗 Social Links"
+linkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+linkButton.Font = Enum.Font.SourceSansBold
+linkButton.TextSize = 16
+linkButton.ZIndex = 3
+linkButton.Parent = screenGui
+linkButton.Visible = false
+
+Instance.new("UICorner", linkButton).CornerRadius = UDim.new(0, 6)
+
+scrollFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+    linkButton.Position = UDim2.new(1, -180, 0.02, scrollFrame.AbsoluteSize.Y + 10)
+end)
+
+local socialMenu = Instance.new("ScrollingFrame")
+socialMenu.Size = UDim2.new(0, 150, 0.5, 0)
+socialMenu.Position = UDim2.new(1, -335, 0.02, 0)
+socialMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+socialMenu.BorderSizePixel = 0
+socialMenu.Visible = false
+socialMenu.Parent = screenGui
+
+Instance.new("UICorner", socialMenu).CornerRadius = UDim.new(0, 6)
+
+local socialLayout = Instance.new("UIListLayout")
+socialLayout.Padding = UDim.new(0, 8)
+socialLayout.Parent = socialMenu
+
+linkButton.MouseButton1Click:Connect(function()
+    socialMenu.Visible = not socialMenu.Visible
+end)
+
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local SECRET_PREFIX = "[EX_EMOTE]:"
+local RemotePlayerProps = {}
+local localProp = nil
+
+-- ==========================================
+-- 1. MIC SPAWNER FUNCTION
+-- ==========================================
+local function SpawnSillyBillyMic(character)
+    if not character then return nil end
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+    if not leftArm then return nil end
+
+    -- Remove duplicate mic if one already exists
+    if character:FindFirstChild("MeshPart") then
+        character.MeshPart:Destroy()
+    end
+
+    local micPart = Instance.new("Part")
+    micPart.Name = "MeshPart"
+    micPart.Size = Vector3.new(0.001, 0.001, 0.001)
+    micPart.CanCollide = false
+    micPart.Anchored = false
+
+    local mesh = Instance.new("SpecialMesh")
+    mesh.Name = "Mesh"
+    mesh.MeshType = Enum.MeshType.FileMesh
+    mesh.MeshId = "rbxassetid://6537209405"
+    mesh.TextureId = "rbxassetid://6505895675"
+    mesh.Scale = Vector3.new(0.065, 0.065, 0.065)
+    mesh.Parent = micPart
+
+    micPart.CFrame = leftArm.CFrame * CFrame.new(0, -1, -0.3)
+
+    local weld = Instance.new("WeldConstraint")
+    weld.Name = "WeldConstraint"
+    weld.Part0 = leftArm
+    weld.Part1 = micPart
+    weld.Parent = micPart
+
+    micPart.Parent = character
+    return micPart
+end
+
+-- ==========================================
+-- 2. BROADCASTING (SENDING SIGNAL)
+-- ==========================================
+local function SendSignal(action)
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local channel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if channel then
+            channel:SendAsync(SECRET_PREFIX .. action)
+        end
+    else
+        local legacyRemote = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if legacyRemote and legacyRemote:FindFirstChild("SayMessageRequest") then
+            legacyRemote.SayMessageRequest:FireServer(SECRET_PREFIX .. action, "All")
+        end
+    end
+end
+
+-- ==========================================
+-- 3. LISTENER (RECEIVING SIGNAL FROM OTHERS)
+-- ==========================================
+Players.PlayerChatted:Connect(function(chatType, sender, message)
+    if sender == LocalPlayer then return end
+
+    if message == SECRET_PREFIX .. "SillyBilly_Start" then
+        if sender.Character then
+            RemotePlayerProps[sender.UserId] = SpawnSillyBillyMic(sender.Character)
+        end
+    elseif message == SECRET_PREFIX .. "SillyBilly_Stop" then
+        if RemotePlayerProps[sender.UserId] then
+            RemotePlayerProps[sender.UserId]:Destroy()
+            RemotePlayerProps[sender.UserId] = nil
+        end
+    end
+end)
+
+-- ==========================================
+-- 4. EMOTE HOOKS (TRIGGERS)
+-- ==========================================
+local function executeEmote(emoteName)
+    if emoteName == "Emote_6(SillyBilly)" then
+        -- Spawn mic locally for yourself
+        localProp = SpawnSillyBillyMic(LocalPlayer.Character)
+        -- Tell other executor users to spawn it on your character too
+        SendSignal("SillyBilly_Start")
+    end
+end
+
+local function stopEmote()
+    if localProp then
+        localProp:Destroy()
+        localProp = nil
+        -- Tell other executor users to remove your mic
+        SendSignal("SillyBilly_Stop")
+    end
+end
+
+-- Example Test Call:
+-- executeEmote("Emote_6(SillyBilly)")
