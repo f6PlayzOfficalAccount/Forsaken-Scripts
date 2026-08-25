@@ -1,6 +1,6 @@
 --// GAME : FORSAKEN
---// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED + TIME SYNC)
---// Version 6.7
+--// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED)
+--// Version 6.6
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -16,7 +16,6 @@ local currentSound
 local loopConnection
 local autoWalkConnection = nil
 local speedTrackConnection = nil
-local syncConnection = nil
 local actionId = 0
 
 -- Custom Randomization Tables
@@ -106,11 +105,6 @@ local function stopAll()
         speedTrackConnection = nil
     end
 
-    if syncConnection then
-        syncConnection:Disconnect()
-        syncConnection = nil
-    end
-
     if character then
         disableCamLock(character)
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -118,70 +112,6 @@ local function stopAll()
             humanoid.WalkSpeed = 16
         end
     end
-end
-
--- ANIMATION SYNC FUNCTION (100 STUDS DISTANCE)
--- ANIMATION & AUDIO SYNC FUNCTION (100 STUDS DISTANCE)
--- ONE-TIME ANIMATION & AUDIO SYNC FUNCTION
--- ONE-TIME ANIMATION & AUDIO SYNC FUNCTION (WITH INITIAL RETRY WINDOW)
-local function startAnimationSync(localTrack, targetAnimId)
-    if syncConnection then 
-        syncConnection:Disconnect() 
-        syncConnection = nil 
-    end
-
-    local startTime = tick()
-    
-    syncConnection = RunService.RenderStepped:Connect(function()
-        -- Stop trying if the track stopped or if 0.5 seconds passed without finding anyone
-        if not localTrack or not localTrack.IsPlaying or (tick() - startTime) > 0.5 then
-            if syncConnection then
-                syncConnection:Disconnect()
-                syncConnection = nil
-            end
-            return
-        end
-
-        local myChar = player.Character
-        local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        if not myHrp then return end
-
-        for _, otherPlayer in ipairs(Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character then
-                local otherHrp = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local otherHum = otherPlayer.Character:FindFirstChildOfClass("Humanoid")
-
-                if otherHrp and otherHum then
-                    local distance = (myHrp.Position - otherHrp.Position).Magnitude
-                    if distance <= 100 then
-                        local animator = otherHum:FindFirstChildOfClass("Animator")
-                        if animator then
-                            for _, playingTrack in ipairs(animator:GetPlayingAnimationTracks()) do
-                                -- Compare AnimationId cleanly
-                                if playingTrack.Animation and (playingTrack.Animation.AnimationId == targetAnimId or playingTrack.Animation.AnimationId == tostring(targetAnimId)) then
-                                    
-                                    -- 1. Snap Animation Time
-                                    localTrack.TimePosition = playingTrack.TimePosition
-
-                                    -- 2. Snap Audio Time once if active
-                                    if currentSound and currentSound.IsPlaying and currentSound.TimeLength > 0 then
-                                        currentSound.TimePosition = playingTrack.TimePosition % currentSound.TimeLength
-                                    end
-
-                                    -- 3. Disconnect immediately after snapping once!
-                                    if syncConnection then
-                                        syncConnection:Disconnect()
-                                        syncConnection = nil
-                                    end
-                                    return
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end)
 end
 
 -- SPEED TRACKER
@@ -219,7 +149,6 @@ local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId,
     introTrack.Looped = false
     introTrack:Play()
     currentAnim = introTrack
-    startAnimationSync(introTrack, introAnimId)
 
     -- Play Intro Sound
     if introSoundId then
@@ -248,7 +177,6 @@ local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId,
         loopTrack.Looped = true
         loopTrack:Play()
         currentAnim = loopTrack
-        startAnimationSync(loopTrack, loopAnimId)
 
         if loopSoundId then
             local sound = Instance.new("Sound")
@@ -275,6 +203,45 @@ local function SpawnStopSign(character)
     if motor then motor.Part0 = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand") end
     return sign
 end
+
+local function SpawnSillyBillyMic(character)
+    local spawnedAssets = {}
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+
+    if leftArm then
+        -- Root Part named "MeshPart" with updated 0.001 size
+        local micPart = Instance.new("Part")
+        micPart.Name = "MeshPart"
+        micPart.Size = Vector3.new(0.001, 0.001, 0.001)
+        micPart.CanCollide = false
+        micPart.Anchored = false
+
+        -- Mesh Setup with updated 0.065 scale
+        local mesh = Instance.new("SpecialMesh")
+        mesh.Name = "Mesh"
+        mesh.MeshType = Enum.MeshType.FileMesh
+        mesh.MeshId = "rbxassetid://6537209405"
+        mesh.TextureId = "rbxassetid://6505895675"
+        mesh.Scale = Vector3.new(0.065, 0.065, 0.065)
+        mesh.Parent = micPart
+
+        -- CFrame offset relative to Left Arm
+        micPart.CFrame = leftArm.CFrame * CFrame.new(0, -1, -0.3)
+
+        -- WeldConstraint setup
+        local weld = Instance.new("WeldConstraint")
+        weld.Name = "WeldConstraint"
+        weld.Part0 = leftArm
+        weld.Part1 = micPart
+        weld.Parent = micPart
+
+        micPart.Parent = character
+        table.insert(spawnedAssets, micPart)
+    end
+
+    return spawnedAssets
+end
+
 
 local function ThePhoneHandle(character)
     local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
@@ -372,7 +339,6 @@ local function LoadSukunaAssets(character)
 
 	return spawnedAssets
 end
-
 local function SpawnShucksAssets(character)
     local spawnedAssets = {}
 
@@ -511,6 +477,9 @@ local function SpawnShucksAssets(character)
     return spawnedAssets
 end
 
+
+
+
 local function SpawnGuitar_2(character)
     local Rig = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Skins.Killers.JohnDoe.AnnihilationJohnDoe:FindFirstChild("Rig")
     if not Rig or not Rig:FindFirstChild("Guitar") then return end
@@ -579,35 +548,42 @@ local function SpawnAuraMonster(character)
 end
 
 local function SpawnMewEmote(character)
-    local emoteTemplate = game:GetService("ReplicatedStorage")
-        :FindFirstChild("Assets")
-        and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes")
-        and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("#MewMew")
+    local emoteTemplate = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
+        and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes") 
+        and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("#MewMew") 
         and game:GetService("ReplicatedStorage").Assets.Emotes["#MewMew"]:FindFirstChild("MEWEMOTE")
 
-    if not emoteTemplate then return end
+    --if not emoteTemplate then return {} end
 
     local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
     local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
     local primaryPart = character.PrimaryPart or character:FindFirstChild("HumanoidRootPart")
 
-    if not (rightArm and leftArm and primaryPart) then return end
+    if not (rightArm and leftArm and primaryPart) then return {} end
 
     local clonedEmote = emoteTemplate:Clone()
     clonedEmote.Name = "MEW_HANDLE"
+
+    -- Assign Part0 targets
+    local rightLight = clonedEmote:FindFirstChild("RightLight")
+    if rightLight and rightLight:FindFirstChild("RIGHTWELD") then
+        rightLight.RIGHTWELD.Part0 = rightArm
+    end
+
+    local leftLight = clonedEmote:FindFirstChild("LeftLight")
+    if leftLight and leftLight:FindFirstChild("LEFTWELD") then
+        leftLight.LEFTWELD.Part0 = leftArm
+    end
+
+    local nothingWeld = clonedEmote:FindFirstChild("NOTHINGWELD", true) -- Recursive search
+    if nothingWeld then
+        nothingWeld.Part0 = primaryPart
+    end
+
     clonedEmote.Parent = character
 
-    if clonedEmote:FindFirstChild("RightLight") and clonedEmote.RightLight:FindFirstChild("RIGHTWELD") then
-        clonedEmote.RightLight.RIGHTWELD.Part0 = rightArm
-    end
-    if clonedEmote:FindFirstChild("LeftLight") and clonedEmote.LeftLight:FindFirstChild("LEFTWELD") then
-        clonedEmote.LeftLight.LEFTWELD.Part0 = leftArm
-    end
-    if clonedEmote:FindFirstChild("NOTHINGWELD") then
-        clonedEmote.NOTHINGWELD.Part0 = primaryPart
-    end
-
-    return clonedEmote
+    -- Must return a table array so currentProp cleanup loops don't throw errors
+    return {clonedEmote}
 end
 
 local function SpawnMewEmote2(character)
@@ -797,6 +773,9 @@ local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, 
     if name == "No" then viewportProp = RightHand(charClone) end
     if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_7(shucks)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
         viewportProp = LoadSukunaAssets(charClone) 
+    end
+    if name == "EmoteNameForSillyBilly" then
+        viewportProp = SpawnSillyBillyMic(charClone)
     end
 
     local hrp = charClone:FindFirstChild("HumanoidRootPart") or charClone.PrimaryPart
@@ -1106,9 +1085,6 @@ for _, data in ipairs(buttonsData) do
 
         track:Play()
         currentAnim = track
-        
-        -- Start time sync for this emote
-        startAnimationSync(track, chosenAnim)
 
         if name == "InvIS" then
             track:Play(0)
@@ -1134,6 +1110,9 @@ for _, data in ipairs(buttonsData) do
         if name == "No" then currentProp = {RightHand(character)} end
         if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" --[[or name == "Emote_7(shucks)"]] or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
             currentProp = LoadSukunaAssets(character) 
+        end
+        if name == "Emote_6(SillyBilly)" then -- Replace with exact emote name string
+            currentProp = SpawnSillyBillyMic(character)
         end
         if name == "Emote_7(shucks)" then
             currentProp = SpawnShucksAssets(character)
