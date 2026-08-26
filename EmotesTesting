@@ -1,10 +1,11 @@
 --// GAME : FORSAKEN
 --// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED)
---// Version 6.6
+--// Version 6.7
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local currentProp = {}
 
@@ -209,14 +210,12 @@ local function SpawnSillyBillyMic(character)
     local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
 
     if leftArm then
-        -- Root Part named "MeshPart" with updated 0.001 size
         local micPart = Instance.new("Part")
         micPart.Name = "MeshPart"
         micPart.Size = Vector3.new(0.001, 0.001, 0.001)
         micPart.CanCollide = false
         micPart.Anchored = false
 
-        -- Mesh Setup with updated 0.065 scale
         local mesh = Instance.new("SpecialMesh")
         mesh.Name = "Mesh"
         mesh.MeshType = Enum.MeshType.FileMesh
@@ -225,10 +224,8 @@ local function SpawnSillyBillyMic(character)
         mesh.Scale = Vector3.new(0.065, 0.065, 0.065)
         mesh.Parent = micPart
 
-        -- CFrame offset relative to Left Arm
         micPart.CFrame = leftArm.CFrame * CFrame.new(0, -1, -0.3)
 
-        -- WeldConstraint setup
         local weld = Instance.new("WeldConstraint")
         weld.Name = "WeldConstraint"
         weld.Part0 = leftArm
@@ -241,7 +238,6 @@ local function SpawnSillyBillyMic(character)
 
     return spawnedAssets
 end
-
 
 local function ThePhoneHandle(character)
     local raw = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
@@ -302,55 +298,55 @@ local function RightHand(character)
 end
 
 local function LoadSukunaAssets(character)
-	local assets = {
-		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.DismantleFX,
-		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.LeftHandle,
-		game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.RightHandle,
-	}
+    local assets = {
+        game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.DismantleFX,
+        game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.LeftHandle,
+        game:GetService("ReplicatedStorage").Assets.Emotes.Sukuna.RightHandle,
+    }
 
-	local spawnedAssets = {}
+    local spawnedAssets = {}
 
-	for _, raw in assets do
-		if raw then
-			local clone = raw:Clone()
-			clone.Parent = character
+    for _, raw in assets do
+        if raw then
+            local clone = raw:Clone()
+            clone.Parent = character
 
-			if raw.Name == "LeftHandle" or raw.Name == "RightHandle" then
-				local side = (raw.Name == "LeftHandle") and "Left" or "Right"
-				local arm = character:FindFirstChild(side .. " Arm") or character:FindFirstChild(side .. "Hand")
+            if raw.Name == "LeftHandle" or raw.Name == "RightHandle" then
+                local side = (raw.Name == "LeftHandle") and "Left" or "Right"
+                local arm = character:FindFirstChild(side .. " Arm") or character:FindFirstChild(side .. "Hand")
 
-				if arm then
-					for _, child in clone:GetDescendants() do
-						if child:IsA("BasePart") then
-							child.Color = arm.Color
-						end
-					end
+                if arm then
+                    for _, child in clone:GetDescendants() do
+                        if child:IsA("BasePart") then
+                            child.Color = arm.Color
+                        end
+                    end
 
-					local motor = clone:FindFirstChildWhichIsA("Motor6D", true)
-					if motor then
-						motor.Part0 = arm
-					end
-				end
-			end
+                    local motor = clone:FindFirstChildWhichIsA("Motor6D", true)
+                    if motor then
+                        motor.Part0 = arm
+                    end
+                end
+            end
 
-			table.insert(spawnedAssets, clone)
-		end
-	end
+            table.insert(spawnedAssets, clone)
+        end
+    end
 
-	return spawnedAssets
+    return spawnedAssets
 end
+
 local function SpawnShucksAssets(character)
     local spawnedAssets = {}
 
     local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
     local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
 
-    -- 1. BUILD SAW MODEL (Right Arm)
+    -- BUILD SAW MODEL (Right Arm)
     if rightArm then
         local sawModel = Instance.new("Model")
         sawModel.Name = "Saw"
 
-        -- Primary Root Part
         local root = Instance.new("Part")
         root.Name = "Root"
         root.Size = Vector3.new(1.000, 2.000, 1.000)
@@ -360,7 +356,6 @@ local function SpawnShucksAssets(character)
         root.Anchored = false
         root.Parent = sawModel
 
-        -- Saw-Model Hand (Mounted on arm)
         local hand = Instance.new("Part")
         hand.Name = "Hand"
         hand.Size = Vector3.new(1.062, 0.637, 1.062)
@@ -369,17 +364,15 @@ local function SpawnShucksAssets(character)
         hand.Anchored = false
         hand.Parent = sawModel
 
-        -- Connecting Bar (Links Hand to BuzzSaw)
         local bar = Instance.new("Part")
         bar.Name = "Bar"
         bar.Shape = Enum.PartType.Cylinder
-        bar.Size = Vector3.new(0.833, 0.088, 0.143) -- Adjusted orientation for cylinder length
+        bar.Size = Vector3.new(0.833, 0.088, 0.143)
         bar.Color = Color3.fromRGB(163, 162, 165)
         bar.CanCollide = false
         bar.Anchored = false
         bar.Parent = sawModel
 
-        -- Spinning Blade
         local buzzSaw = Instance.new("Part")
         buzzSaw.Name = "BuzzSaw"
         buzzSaw.Size = Vector3.new(1.038, 1.038, 0.519)
@@ -388,7 +381,6 @@ local function SpawnShucksAssets(character)
         buzzSaw.Anchored = false
         buzzSaw.Parent = sawModel
 
-        -- Blade Mesh
         local mesh = Instance.new("SpecialMesh")
         mesh.Name = "Mesh"
         mesh.MeshType = Enum.MeshType.FileMesh
@@ -398,15 +390,11 @@ local function SpawnShucksAssets(character)
         mesh.Offset = Vector3.new(0, 0, 0)
         mesh.Parent = buzzSaw
 
-        -- Alignments Relative to Right Arm
         root.CFrame = rightArm.CFrame
         hand.CFrame = root.CFrame * CFrame.new(0, -0.719, 0)
-        
-        -- Position Bar bridging Hand (-0.719) down to BuzzSaw (-1.786)
         bar.CFrame = root.CFrame * CFrame.new(0.031, -1.252, 0) * CFrame.Angles(0, 0, math.rad(90))
         buzzSaw.CFrame = root.CFrame * CFrame.new(0.031, -1.786, 0)
 
-        -- Static Structural Welds
         local rootWeld = Instance.new("WeldConstraint")
         rootWeld.Name = "WeldConstraint"
         rootWeld.Part0 = rightArm
@@ -419,14 +407,12 @@ local function SpawnShucksAssets(character)
         handWeld.Part1 = hand
         handWeld.Parent = hand
 
-        -- Weld Bar to Hand so it stays fixed as the connecting rod
         local barWeld = Instance.new("WeldConstraint")
         barWeld.Name = "WeldConstraint"
         barWeld.Part0 = hand
         barWeld.Part1 = bar
         barWeld.Parent = bar
 
-        -- Motor6D Setup for BuzzSaw Spin
         local sawMotor = Instance.new("Motor6D")
         sawMotor.Name = "BuzzSaw"
         sawMotor.Part0 = rightArm
@@ -435,7 +421,6 @@ local function SpawnShucksAssets(character)
         sawMotor.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
         sawMotor.Parent = sawModel
 
-        -- Spin Connection
         local spinConn
         spinConn = RunService.RenderStepped:Connect(function(dt)
             if sawModel and sawModel.Parent then
@@ -449,7 +434,7 @@ local function SpawnShucksAssets(character)
         table.insert(spawnedAssets, sawModel)
     end
 
-    -- 2. SPAWN SUKUNA LEFT HANDLE (Left Arm)
+    -- SPAWN SUKUNA LEFT HANDLE (Left Arm)
     local rawLeftHandle = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") 
         and game:GetService("ReplicatedStorage").Assets:FindFirstChild("Emotes")
         and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("Sukuna")
@@ -476,9 +461,6 @@ local function SpawnShucksAssets(character)
 
     return spawnedAssets
 end
-
-
-
 
 local function SpawnGuitar_2(character)
     local Rig = game:GetService("ReplicatedStorage"):FindFirstChild("Assets") and game:GetService("ReplicatedStorage").Assets.Skins.Killers.JohnDoe.AnnihilationJohnDoe:FindFirstChild("Rig")
@@ -553,8 +535,6 @@ local function SpawnMewEmote(character)
         and game:GetService("ReplicatedStorage").Assets.Emotes:FindFirstChild("#MewMew") 
         and game:GetService("ReplicatedStorage").Assets.Emotes["#MewMew"]:FindFirstChild("MEWEMOTE")
 
-    --if not emoteTemplate then return {} end
-
     local rightArm = character:FindFirstChild("Right Arm") or character:FindFirstChild("RightHand")
     local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
     local primaryPart = character.PrimaryPart or character:FindFirstChild("HumanoidRootPart")
@@ -564,7 +544,6 @@ local function SpawnMewEmote(character)
     local clonedEmote = emoteTemplate:Clone()
     clonedEmote.Name = "MEW_HANDLE"
 
-    -- Assign Part0 targets
     local rightLight = clonedEmote:FindFirstChild("RightLight")
     if rightLight and rightLight:FindFirstChild("RIGHTWELD") then
         rightLight.RIGHTWELD.Part0 = rightArm
@@ -575,14 +554,12 @@ local function SpawnMewEmote(character)
         leftLight.LEFTWELD.Part0 = leftArm
     end
 
-    local nothingWeld = clonedEmote:FindFirstChild("NOTHINGWELD", true) -- Recursive search
+    local nothingWeld = clonedEmote:FindFirstChild("NOTHINGWELD", true)
     if nothingWeld then
         nothingWeld.Part0 = primaryPart
     end
 
     clonedEmote.Parent = character
-
-    -- Must return a table array so currentProp cleanup loops don't throw errors
     return {clonedEmote}
 end
 
@@ -671,6 +648,7 @@ nameLabel.Text = "Emote Name"
 nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 nameLabel.Font = Enum.Font.SourceSansBold
 nameLabel.TextSize = 20
+nameLabel.TextScaled = true
 nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 nameLabel.ZIndex = 11
 nameLabel.Parent = infoFrame
@@ -730,7 +708,7 @@ end
 
 closeBtn.MouseButton1Click:Connect(closeInfoMenu)
 
-local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, customIcon, customDesc)
+local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, customIcon, customDesc, volumeVal)
     closeInfoMenu()
     
     infoImage.Image = customIcon or imageId or "rbxassetid://0"
@@ -771,11 +749,14 @@ local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, 
     if name == "Mewers Live2" then viewportProp = SpawnMewEmote2(charClone) end
     if name == "Old The Phone" then viewportProp = ThePhoneHandle(charClone) end
     if name == "No" then viewportProp = RightHand(charClone) end
-    if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_7(shucks)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
+    if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
         viewportProp = LoadSukunaAssets(charClone) 
     end
-    if name == "EmoteNameForSillyBilly" then
+    if name == "Emote_6(SillyBilly)" then
         viewportProp = SpawnSillyBillyMic(charClone)
+    end
+    if name == "Emote_7(shucks)" then
+        viewportProp = SpawnShucksAssets(charClone)
     end
 
     local hrp = charClone:FindFirstChild("HumanoidRootPart") or charClone.PrimaryPart
@@ -838,6 +819,7 @@ local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, 
         viewportSound = Instance.new("Sound")
         viewportSound.SoundId = chosenSound
         viewportSound.Looped = not SongLoop
+        viewportSound.Volume = volumeVal or 0.9
         viewportSound.Parent = infoFrame
         viewportSound:Play()
     end
@@ -929,14 +911,19 @@ local buttonsData = {
     {"Mezmersizer New-Old Audio", "rbxassetid://102332849201255", "rbxassetid://71934965392436"},
     {"Emote_9(Penquin)", "rbxassetid://132087606887347", nil},
     {"Emote_10(macarena)", "rbxassetid://99366472605758", nil},
+    {"Emote_10(macarena) NEW", "rbxassetid://99366472605758", "rbxassetid://78191952114848"},
     {"Emote_11(ChickenNom)", "rbxassetid://95127225490093", "rbxassetid://97538785569799",nil,nil,true,"rbxassetid://93387041641721"},
     {"GenAnim", "rbxassetid://130355934640695", nil},
     {"1x1x1x1StunStart", "rbxassetid://96642629473615", nil},
-    {"StunnedAnim(Noli)", "rbxassetid://122580527125278", nil}
+    {"StunnedAnim(Noli)", "rbxassetid://122580527125278", nil},
+    --{"#observing", "rbxassetid://95008278201478", "rbxassetid://75016449242779", nil, nil, nil, "rbxassetid://139203361911725", "#observing", 1},
+    {"#observing", "rbxassetid://92707131619139", "rbxassetid://75016449242779", nil, nil, nil, "rbxassetid://139203361911725", "well uhh forgot to eyes mbmb", 1},
+    {"Glee Co.", "rbxassetid://79863122388790", "rbxassetid://114506636674765", nil, nil, nil, "rbxassetid://101825267076434", "Glee Co.", 0.5},
+    {"STAT1C! (alt)", "rbxassetid://94425494947119", "rbxassetid://125819155769947", nil, nil, nil, "rbxassetid://75414967011351", "STAT1C! (alt)", 4}
 }
 
 for _, data in ipairs(buttonsData) do
-    local name, animId, soundId, SongLoop, loopanim, isSpeedEmote, customIcon, customDesc = unpack(data)
+    local name, animId, soundId, SongLoop, loopanim, isSpeedEmote, customIcon, customDesc, volumeVal = unpack(data)
     
     local containerFrame = Instance.new("Frame")
     containerFrame.Name = name .. "_Container"
@@ -960,11 +947,24 @@ for _, data in ipairs(buttonsData) do
     btn.Size = UDim2.new(1, -54, 1, -8)
     btn.Position = UDim2.new(0, 4, 0, 4)
     btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Text = name
+    btn.Text = "" -- Set via text wrapper to prevent clipping
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 16
     btn.TextColor3 = Color3.fromRGB(0, 0, 0)
     btn.Parent = containerFrame
+
+    -- Text wrapper to guarantee multi-line / scaled fit inside button space
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, -8, 1, -8)
+    textLabel.Position = UDim2.new(0, 4, 0, 4)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = name
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.TextScaled = true
+    textLabel.TextWrapped = true
+    textLabel.ZIndex = 2
+    textLabel.Parent = btn
 
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 4)
@@ -1009,7 +1009,7 @@ for _, data in ipairs(buttonsData) do
     infoIconBtn.Parent = imgBtn
 
     infoIconBtn.MouseButton1Click:Connect(function()
-        openInfoMenu(name, customIcon, animId, soundId, SongLoop, loopanim, customIcon, customDesc)
+        openInfoMenu(name, customIcon, animId, soundId, SongLoop, loopanim, customIcon, customDesc, volumeVal)
     end)
 
     local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -1108,10 +1108,10 @@ for _, data in ipairs(buttonsData) do
         if name == "Mewers Live" or name == "Mewers Live2" then currentProp = {SpawnMewEmote(character)} end
         if name == "Old The Phone" then currentProp = {ThePhoneHandle(character)} end
         if name == "No" then currentProp = {RightHand(character)} end
-        if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" --[[or name == "Emote_7(shucks)"]] or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
+        if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
             currentProp = LoadSukunaAssets(character) 
         end
-        if name == "Emote_6(SillyBilly)" then -- Replace with exact emote name string
+        if name == "Emote_6(SillyBilly)" then
             currentProp = SpawnSillyBillyMic(character)
         end
         if name == "Emote_7(shucks)" then
@@ -1143,7 +1143,9 @@ for _, data in ipairs(buttonsData) do
             sound.Looped = not SongLoop
             sound.Parent = character:WaitForChild("HumanoidRootPart")
             
-            if name == "Emote_3(Suter Fudge)" then
+            if volumeVal then
+                sound.Volume = volumeVal
+            elseif name == "Emote_3(Suter Fudge)" then
                 sound.Volume = 3.25
             else
                 sound.Volume = 0.9
@@ -1159,13 +1161,32 @@ for _, data in ipairs(buttonsData) do
         end
     end
 
-    btn.MouseButton1Click:Connect(executeEmote)
-    imgBtn.MouseButton1Click:Connect(executeEmote)
-    containerFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            executeEmote()
-        end
-    end)
+    -- MOBILE DRAG / TOUCH DRAG PREVENTION
+    local touchStartPos = Vector2.zero
+    local touchStartTime = 0
+
+    local function setupTouchSafety(uiObject)
+        uiObject.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                touchStartPos = input.Position
+                touchStartTime = os.clock()
+            end
+        end)
+
+        uiObject.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local dragDistance = (Vector2.new(input.Position.X, input.Position.Y) - Vector2.new(touchStartPos.X, touchStartPos.Y)).Magnitude
+                local duration = os.clock() - touchStartTime
+                -- Only execute if touch movement was minimal (not scrolling) and short tap duration
+                if dragDistance < 10 and duration < 0.35 then
+                    executeEmote()
+                end
+            end
+        end)
+    end
+
+    setupTouchSafety(btn)
+    setupTouchSafety(imgBtn)
 end
 
 -- SEARCH BAR
@@ -1194,9 +1215,9 @@ searchBox:GetPropertyChangedSignal("Text"):Connect(function()
     local searchText = string.lower(searchBox.Text)
     for _, child in ipairs(scrollFrame:GetChildren()) do
         if child:IsA("Frame") then
-            local textBtn = child:FindFirstChild("TextButton")
-            if textBtn then
-                child.Visible = (searchText == "" or string.find(string.lower(textBtn.Text), searchText) ~= nil)
+            local textLabel = child:FindFirstChild("TextButton") and child.TextButton:FindFirstChild("TextLabel")
+            if textLabel then
+                child.Visible = (searchText == "" or string.find(string.lower(textLabel.Text), searchText) ~= nil)
             end
         end
     end
