@@ -128,31 +128,36 @@ HomeTab:CreateSection("Game Info")
 HomeTab:CreateLabel("Game (script): Forsaken")
 
 HomeTab:CreateSection("Updates Logs")
-HomeTab:CreateLabel("Update Log: v11.0")
+HomeTab:CreateLabel("Update Log: v13.0 Summer update")
 
 HomeTab:CreateParagraph({
    Title = "Rayfield",
    Content = [=[
     << TABS >>
-• Added more LMS audios
-• Added Emote Audios
-• Added more Ability Animation Changer
+    --IDLE WALK RUN--
+• Added 1X FURRY
+• Added PhonkKidd
+• Added Krystal
+• Added Scared Run (Goffy) 
+• Added Minions
+• Added 2Time Crouch
+• Lots more
+    -- ABILITY CHNAGER -- 
+• Added more ck
     << ADDONS >>
-• Added many new anims in animations
-• Added more Global lms
+• None
 ]=]
 })
 HomeTab:CreateParagraph({
    Title = "Emotes",
    Content = [=[
-• Added Old Locked (no effects)
-• Added Jawline Emote
-• Added Ticktcok A2 
-• Added No emote
-• Added a new audio to Gangnam Style
-• Added discriptions for few emotes
-• added images for few emotes
-• fixed few bugs
+• RAAAHHHHHH
+• Street Cat Dance
+• Phonk kidds emote 
+• Meditate
+• Key Bye Key is ...(long name)
+• Low cholesterol 
+• Many More
 ]=]
 })
 
@@ -454,76 +459,210 @@ HomeTab:CreateParagraph({
     --================================================--
     -- ANIMATION TAB SECTION (FIXED & RESETTABLE)
     --================================================--
-    local AnimTab = Window:CreateTab("Animations", 108472274328332)
-    AnimTab:CreateSection("Animation Switcher")
+local AnimTab = Window:CreateTab("Animations", 108472274328332)
+AnimTab:CreateSection("Animation Switcher")
 
-    local Animations = {
-        ["Normal"] = nil,
-        ["Noli (MS 3-4)"] = { Idle = "rbxassetid://110933164243478", Walk = "rbxassetid://132550421221296", Run = "rbxassetid://105441420067903" },
-        ["KIKIKI (ms4 fire jason)"] = { Idle = "rbxassetid://111915677103210", Walk = "rbxassetid://92337314320765", Run = "rbxassetid://86125526846131" },
-        ["REA 51"] = { Idle = "rbxassetid://125750544 ", Walk = "rbxassetid://252557606", Run = "rbxassetid://252557606" },
-        ["John Toe"] = { Idle = "rbxassetid://105880087711722", Walk = "rbxassetid://81193817424328", Run = "rbxassetid://132653655520682" },
-        ["John doe (MS4)"] = { Idle = "rbxassetid://82559085571201", Walk = "rbxassetid://88665566861294", Run = "rbxassetid://122746181525119" },
-        ["CoolKidd"] = { Idle = "rbxassetid://18885903667", Walk = "rbxassetid://18885906143", Run = "rbxassetid://96571077893813" },
-        ["1x"] = { Idle = "rbxassetid://138754221537146", Walk = "rbxassetid://109130982296927", Run = "rbxassetid://106485518413331" },
-        ["Dragon Fruit"] = { Idle = "rbxassetid://103258687488309", Walk = "rbxassetid://76148869563038", Run = "rbxassetid://130006476298106" },
-        ["Im porpol"] = { Idle = "rbxassetid://83465205704188", Walk = "rbxassetid://109700476007435", Run = "rbxassetid://117451341682452" },
-        ["Dog Only"] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://109671225388655" },
-        ["Special G666 RUN (Guess 666 only) "] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://97155057793046" },
-        ["Narrator"] = { Idle = "rbxassetid://129891807903845", Walk = "rbxassetid://114152086302685", Run = "rbxassetid://97759042686395" },
-        ["BrawlBattler"] = { Idle = "rbxassetid://96173779255396", Walk = "rbxassetid://96194626828153", Run = "rbxassetid://96194626828153" },
-        ["Lovecore"] = { Idle = "rbxassetid://94203802413304", Walk = "rbxassetid://90708761928557", Run = "rbxassetid://117355450522769" },
-        ["Grollusiam"] = { Idle = "rbxassetid://138798332857092", Walk = "rbxassetid://125121915550057", Run = "rbxassetid://119868176210393" },
-        ["The Slick Dud - Original ANIMS"] = { Idle = "rbxassetid://96272036780957", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://111367557693514" },
-        ["Digital Rider"] = { Idle = "rbxassetid://83139195403190", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://113749369268942" },
-        ["Survivor OG Anims"] = { Idle = "rbxassetid://131082534135875", Walk = "rbxassetid://108018357044094", Run = "rbxassetid://136252471123500" },
-        ["Drifter Slaher"] = { Idle = "rbxassetid://137140789784322", Walk = "rbxassetid://100758925086750", Run = "rbxassetid://83866654755739" },
-        ["Who shall i Stalk today"] = { Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://108287960442206", Run = "rbxassetid://109671225388655" },
-        ["WHY IS THAT TV WALKING-"] = { Idle = "rbxassetid://85728609580979", Walk = "rbxassetid://95769893872782", Run = "rbxassetid://95769893872782" },
-        ["AZURE"] = { Idle = "rbxassetid://83610109883783", Walk = "rbxassetid://106875719128301", Run = "rbxassetid://94531473885454" },
-        ["Nos"] = { Idle = "rbxassetid://70639889347646", Walk = "rbxassetid://125580704385106", Run = "rbxassetid://82983377044738" },
-        ["The ADMIN?!"] = { Idle = "rbxassetid://119473916907837", Walk = "rbxassetid://89706191899405", Run = "rbxassetid://124250212996049" },
-        ["Bluudude"] = {Idle = "rbxassetid://96013907659083", Walk = "rbxassetid://111019416323211", Run = "rbxassetid://101711406381367"},
-        ["Stalker"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://95469909855529", Run = "rbxassetid://108287960442206"},
-        ["Stalker Enraged"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://109671225388655", Run = "rbxassetid://109671225388655"},
-        ["Sir Kadee (REMOVED)"] = {Idle = "rbxassetid://106747022056308", Walk = "rbxassetid://80928452877668", Run = "rbxassetid://100351974985081"},
-        ["OLD MAFIASO"] = {Idle = "rbxassetid://93179551282576",Walk = "rbxassetid://90878063243908",Run = "rbxassetid://90878063243908"},
-        ["JASON/SLASHER"] = { Idle = "rbxassetid://116050994905421",Walk = "rbxassetid://93622022596108",Run = "rbxassetid://93054787145505"},
-        --[""] = { Idle = "rbxassetid://",Walk = "rbxassetid://",Run = "rbxassetid://"},
-        ["Hacklord"] = { Idle = "rbxassetid://106131211773069",Walk = "rbxassetid://119112338263474",Run = "rbxassetid://85339002634979"},
-        --[""] = { Idle = "rbxassetid://",Walk = "rbxassetid://",Run = "rbxassetid://"},
-        ["SlenderMan"] = { Idle = "rbxassetid://16271046661",Walk = "rbxassetid://16271050821",Run = "rbxassetid://16271050821"},
-        ["Coolkidd (MS4)"] = {Idle = "rbxassetid://136752484165169",Walk = "rbxassetid://124582615971845",Run = "rbxassetid://113259297401193"},
-    }
+local Animations = {
+    ["Normal"] = nil,
+    ["Noli (MS 3-4)"] = { Idle = "rbxassetid://110933164243478", Walk = "rbxassetid://132550421221296", Run = "rbxassetid://105441420067903" },
+    ["KIKIKI (ms4 fire jason)"] = { Idle = "rbxassetid://111915677103210", Walk = "rbxassetid://92337314320765", Run = "rbxassetid://86125526846131" },
+    ["AREA 51"] = { Idle = "rbxassetid://125750544 ", Walk = "rbxassetid://252557606", Run = "rbxassetid://252557606" },
+    ["John Toe"] = { Idle = "rbxassetid://105880087711722", Walk = "rbxassetid://81193817424328", Run = "rbxassetid://132653655520682" },
+    ["John doe (MS4)"] = { Idle = "rbxassetid://82559085571201", Walk = "rbxassetid://88665566861294", Run = "rbxassetid://122746181525119" },
+    ["CoolKidd"] = { Idle = "rbxassetid://18885903667", Walk = "rbxassetid://18885906143", Run = "rbxassetid://96571077893813" },
+    ["1x"] = { Idle = "rbxassetid://138754221537146", Walk = "rbxassetid://109130982296927", Run = "rbxassetid://106485518413331" },
+    ["Dragon Fruit"] = { Idle = "rbxassetid://103258687488309", Walk = "rbxassetid://76148869563038", Run = "rbxassetid://130006476298106" },
+    ["Im porpol"] = { Idle = "rbxassetid://83465205704188", Walk = "rbxassetid://109700476007435", Run = "rbxassetid://117451341682452" },
+    ["Dog Only"] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://109671225388655" },
+    ["Special G666 RUN (Guess 666 only) "] = { Idle = "rbxassetid://0", Walk = "rbxassetid://0", Run = "rbxassetid://97155057793046" },
+    ["Narrator"] = { Idle = "rbxassetid://129891807903845", Walk = "rbxassetid://114152086302685", Run = "rbxassetid://97759042686395" },
+    ["BrawlBattler"] = { Idle = "rbxassetid://96173779255396", Walk = "rbxassetid://96194626828153", Run = "rbxassetid://96194626828153" },
+    ["Lovecore"] = { Idle = "rbxassetid://94203802413304", Walk = "rbxassetid://90708761928557", Run = "rbxassetid://117355450522769" },
+    ["Grollusiam"] = { Idle = "rbxassetid://138798332857092", Walk = "rbxassetid://125121915550057", Run = "rbxassetid://119868176210393" },
+    ["The Slick Dud - Original ANIMS"] = { Idle = "rbxassetid://96272036780957", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://111367557693514" },
+    ["Digital Rider"] = { Idle = "rbxassetid://83139195403190", Walk = "rbxassetid://116833695762672", Run = "rbxassetid://113749369268942" },
+    ["Survivor OG Anims"] = { Idle = "rbxassetid://131082534135875", Walk = "rbxassetid://108018357044094", Run = "rbxassetid://136252471123500" },
+    ["Drifter Slaher"] = { Idle = "rbxassetid://137140789784322", Walk = "rbxassetid://100758925086750", Run = "rbxassetid://83866654755739" },
+    ["Who shall i Stalk today"] = { Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://108287960442206", Run = "rbxassetid://109671225388655" },
+    ["TV Time"] = { Idle = "rbxassetid://85728609580979", Walk = "rbxassetid://95769893872782", Run = "rbxassetid://95769893872782" },
+    ["AZURE"] = { Idle = "rbxassetid://83610109883783", Walk = "rbxassetid://106875719128301", Run = "rbxassetid://94531473885454" },
+    ["Nos"] = { Idle = "rbxassetid://70639889347646", Walk = "rbxassetid://125580704385106", Run = "rbxassetid://82983377044738" },
+    ["The ADMIN?!"] = { Idle = "rbxassetid://119473916907837", Walk = "rbxassetid://89706191899405", Run = "rbxassetid://124250212996049" },
+    ["Bluudude"] = {Idle = "rbxassetid://96013907659083", Walk = "rbxassetid://111019416323211", Run = "rbxassetid://101711406381367"},
+    ["Stalker"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://95469909855529", Run = "rbxassetid://108287960442206"},
+    ["Stalker Enraged"] = {Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://109671225388655", Run = "rbxassetid://109671225388655"},
+    ["Sir Kadee (REMOVED)"] = {Idle = "rbxassetid://106747022056308", Walk = "rbxassetid://80928452877668", Run = "rbxassetid://100351974985081"},
+    ["OLD MAFIASO"] = {Idle = "rbxassetid://93179551282576",Walk = "rbxassetid://90878063243908",Run = "rbxassetid://90878063243908"},
+    ["JASON/SLASHER"] = { Idle = "rbxassetid://116050994905421",Walk = "rbxassetid://93622022596108",Run = "rbxassetid://93054787145505"},
+    ["Hacklord"] = { Idle = "rbxassetid://106131211773069",Walk = "rbxassetid://119112338263474",Run = "rbxassetid://85339002634979"},
+    ["Coolkidd Minion"] = { Idle = "rbxassetid://18886066950",Walk = "rbxassetid://18886064499",Run = "rbxassetid://18886064499"},
+    ["SlenderMan"] = { Idle = "rbxassetid://16271046661",Walk = "rbxassetid://16271050821",Run = "rbxassetid://16271050821"},
+    ["Coolkidd (MS4)"] = {Idle = "rbxassetid://136752484165169",Walk = "rbxassetid://124582615971845",Run = "rbxassetid://113259297401193"},
+    ["White Pumpkin"] = { Idle = "rbxassetid://129258407299450",Walk = "rbxassetid://120452519884275",Run = "rbxassetid://73353742411211"},
+    ["Artful"] = { Idle = "rbxassetid://88012681536088",Walk = "rbxassetid://92645737884601",Run = "rbxassetid://72285218671060"},
+    ["Persuer"] = { Idle = "rbxassetid://94895464960972",Walk = "rbxassetid://100206079439305",Run = "rbxassetid://138660433982140"},
+    ["Dead Rabbits"] = { Idle = "rbxassetid://90058499489267",Walk = "rbxassetid://93622022596108",Run = "rbxassetid://93054787145505"},
+    ["TreachStone JD"] = { Idle = "rbxassetid://99305564475272",Walk = "rbxassetid://139721734383445",Run = "rbxassetid://139371680348837"},
+    ["Screamer JD"] = { Idle = "rbxassetid://85165308914564",Walk = "rbxassetid://124316306736993",Run = "rbxassetid://91871080077140"},
+    ["SCARED RUNN (goffy)"] = { Idle = "rbxassetid://97386332584858",Walk = "rbxassetid://97386332584858",Run = "rbxassetid://77440242026940"},
+    ["Krystal"] = {Idle = "rbxassetid://72141724360065", Walk = "rbxassetid://131587098979198", Run = "rbxassetid://140644979041384"},
+    ["1DEV2 (coolkidd)"] = { Idle = "rbxassetid://93179551282576", Walk = "rbxassetid://90878063243908", Run = "rbxassetid://90878063243908"},
+    ["1X FURRY"] = {Idle = "rbxassetid://81206500330483", Walk = "rbxassetid://78906137020389", Run = "rbxassetid://82453647377666"},
+    ["PhonkKidd"] = {Idle = "rbxassetid://84139905229417", Walk = "rbxassetid://98531451886081", Run = "rbxassetid://83685333701941"},
+    ["PhonkKidd Minion1"] = { Idle = "rbxassetid://94022733255359", Walk = "rbxassetid://70995134606415 ",Run = "rbxassetid://70995134606415 "},
+    ["PhonkKidd Minion2"] = {Idle = "rbxassetid://94022733255359", Walk = "rbxassetid://70995134606415",Run = "rbxassetid://70995134606415"},
+    ["1X Minion"] = { Idle = "rbxassetid://138465378316476", Walk = "rbxassetid://127848783748209", Run = "rbxassetid://72722119435580"},
+    ["1X FURRY MINNION"] = { Idle = "rbxassetid://95825599887967", Walk = "rbxassetid://114061085959574", Run = "rbxassetid://132066891003942"},
+    ["Two Time Crouch"] = { Idle = "rbxassetid://74530436512522", Walk = "rbxassetid://94721495253171", Run = "rbxassetid://93499989310243"},
+    ["CollabKidd"] = {Idle = "rbxassetid://139474976321675",
+        Walk = "rbxassetid://138869493309583",
+        Run = "rbxassetid://93775105267385",},
+    ["P4rtyPwny"] = {Idle = "rbxassetid://89631009183618",
+    Walk = "rbxassetid://80027857283158",
+    Run = "rbxassetid://93953551057951",},
+    ["Mafiaso"] = {Idle = "rbxassetid://96029349600709",
+        Walk = "rbxassetid://122086286372651",
+        Run = "rbxassetid://73833636394121",},
+    ["c00lskeleton95"] = {Idle = "rbxassetid://81774964081778",
+        Walk = "rbxassetid://107889080208588",
+        Run = "rbxassetid://85566946436688",},
+    ["Fleskhjerta"] = {Idle = "rbxassetid://83386237316095",
+        Walk = "rbxassetid://73232931166638",
+        Run = "rbxassetid://102965304565670",},
+    ["Heaven Executioner"] = {Idle = "rbxassetid://107520982244405",
+        Walk = "rbxassetid://96971543769156",
+        Run = "rbxassetid://88200662711695"},
+    ["Marty1X"] = { Idle = "rbxassetid://135861240743370",
+        Walk = "rbxassetid://110778442730032",
+        Run = "rbxassetid://140129180242872"},
+    ["The Pestilence (formally in game codes called \"DOC\")"] = {Idle = "rbxassetid://87749799033132",
+        Walk = "rbxassetid://89281559077512",
+        Run = "rbxassetid://108688319372143"},
+    ["Sukuna"] = {Idle = "rbxassetid://115268929362938",
+        Walk = "rbxassetid://123678890237669",
+        Run = "rbxassetid://132086389849889",},
+    ["!Brimstone"] = {Idle = "rbxassetid://106883884364210",
+    Walk = "rbxassetid://131203472525014",
+    Run = "rbxassetid://93106765808091"},
+    ["Duke Erisia"] = {Idle = "rbxassetid://132811450080149",
+		Walk = "rbxassetid://90163253241107",
+		Run = "rbxassetid://74634685431456",},
+    ["Erkling"] = {Idle = "rbxassetid://93727662665079",
+        Walk = "rbxassetid://131235528875091"
+        ,Run = "rbxassetid://87121677046773"},
+    ["Solemn Lament"] = {Idle = "rbxassetid://139593371220629",
+		Walk = "rbxassetid://72876915959076",
+		Run = "rbxassetid://87121677046773",},
+    ["Mequot"] = {
+		Idle = "rbxassetid://106151516153723",
+		Walk = "rbxassetid://97792745378633",
+		Run = "rbxassetid://133340430702728"},
+    ["Mequot Enraged"] = {
+		--EnragedStart = "rbxassetid://125740920231913",
+		Idle = "rbxassetid://88434331204148",
+		Walk = "rbxassetid://95939236092784",
+		Run = "rbxassetid://95939236092784",},
+    ["Slasher Enraged"] = {Idle = "rbxassetid://109875321916742",
+    Walk = "rbxassetid://86451881483688",
+    Run = "rbxassetid://93054787145505",},
+    ["Krystal Coolkidd Minion Guitar "] = { 
+        Idle = "rbxassetid://86826552226154", 
+        Walk = "rbxassetid://71310365796613", 
+        Run = "rbxassetid://71310365796613" 
+    },
 
+    ["Krystal Coolkidd Minion Harp "] = { 
+        Idle = "rbxassetid://130953056282982", 
+        Walk = "rbxassetid://73664500512977", 
+        Run = "rbxassetid://73664500512977" 
+    },
 
-    local currentPack = "Normal"
-    local activeTracks = {}
-    local movementLoop = nil
+    ["Krystal Coolkidd Minion Saxophone "] = { 
+        Idle = "rbxassetid://81193426316345", 
+        Walk = "rbxassetid://119935047816879", 
+        Run = "rbxassetid://119935047816879" 
+    },
 
-    -- Modifying internal localReset to explicitly wipe references out of memory
-    local function cleanAndStopTracks()
-        if movementLoop then movementLoop:Disconnect() movementLoop = nil end
-        for _, track in pairs(activeTracks) do pcall(function() track:Stop(0.1) track:Destroy() end) end
-        table.clear(activeTracks)
-        localReset()
+    ["Krystal Coolkidd Minion Tuba "] = { 
+        Idle = "rbxassetid://89419449787879", 
+        Walk = "rbxassetid://86031034742344", 
+        Run = "rbxassetid://86031034742344" 
+    },
+    --[""] = {},
+    --[""] = {},
+    --[""] = {},
+    --[""] = {},
+}
+
+-- CUSTOM SPEED CONFIGURATION: Add pack names here to adjust Idle, Walk, or Run speed multipliers.
+-- Omitted values or packs automatically default to normal speed (1.0).
+local packSpeeds = {
+    --["Coolkidd Minion"] = { Idle = 1.0, Walk = 1.25, Run = 1.5 },
+    --["1X FURRY MINNION"] = { Idle = 0.8, Walk = 1.4, Run = 1.8 },
+    -- Add any other packs here:
+    [ "Im porpol"] = { Idle = 1.0, Walk = 1.2, Run = 1.6 },
+    ["Artful"] = { Idle = 1.0, Walk = 1.1, Run = 1.4 },
+    ["TV Time"] = { Idle = 1.0, Walk = 0.85, Run = 1.25 },
+    ["AREA 51"] = { Idle = 1.0, Walk = 0.8, Run = 1.2 },
+    ["Stalker Enraged"] = { Idle = 1.0, Walk = 0.75, Run = 1.2 },
+    -- ["Pack Name"] = { Idle = 1.0, Walk = 1.5, Run = 2.0 },
+}
+
+local currentPack = "Normal"
+local activeTracks = {}
+local movementLoop = nil
+local currentSummonTrack = nil
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function playSummonAnim(char, ID)
+    local humanoid = char:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+
+    if currentSummonTrack and currentSummonTrack.IsPlaying then
+        currentSummonTrack:Stop(0)
     end
 
-    local function applyPack(char)
-        cleanAndStopTracks()
-        if not LocalActiveRef or not LocalActiveRef.Value then return end
+    local startAnim = Instance.new("Animation")
+    startAnim.AnimationId = "rbxassetid://" .. tostring(ID)
+    
+    currentSummonTrack = animator:LoadAnimation(startAnim)
+    currentSummonTrack.Priority = Enum.AnimationPriority.Action4
+    currentSummonTrack.Looped = false
+    currentSummonTrack:Play(0.1)
+end
 
-        local humanoid = char:WaitForChild("Humanoid")
-        local root = char:WaitForChild("HumanoidRootPart")
-        local animate = char:FindFirstChild("Animate")
+local function cleanAndStopTracks()
+    if movementLoop then 
+        movementLoop:Disconnect() 
+        movementLoop = nil 
+    end
+    for _, track in pairs(activeTracks) do
+        if track then 
+            pcall(function() track:Stop(0.1) track:Destroy() end)
+        end
+    end
+    table.clear(activeTracks)
+end
 
-        if currentPack == "Normal" then return end
-        if animate then animate.Disabled = true end
+local function applyPack(char)
+    cleanAndStopTracks()
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
 
-        local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
-        local pack = Animations[currentPack]
-        
-        for state, id in pairs(pack) do
+    local humanoid = char:WaitForChild("Humanoid")
+    local root = char:WaitForChild("HumanoidRootPart")
+    local animate = char:FindFirstChild("Animate")
+
+    if currentPack == "Normal" then return end
+    if animate then animate.Disabled = true end
+
+    local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+    local pack = Animations[currentPack]
+    if not pack then return end
+    
+    for state, id in pairs(pack) do
+        if id ~= "" and id ~= "rbxassetid://" then
             local anim = Instance.new("Animation")
             anim.AnimationId = id
             local track = animator:LoadAnimation(anim)
@@ -531,53 +670,101 @@ HomeTab:CreateParagraph({
             track.Looped = true
             activeTracks[state] = track
         end
-
-        local currentState = nil
-        movementLoop = RunService.Heartbeat:Connect(function()
-            if not LocalActiveRef or not LocalActiveRef.Value or not char.Parent or humanoid.Health <= 0 then 
-                if movementLoop then movementLoop:Disconnect() end
-                return 
-            end
-            local speed = root.AssemblyLinearVelocity.Magnitude
-            local state = speed < 1 and "Idle" or (speed < 20 and "Walk" or "Run")
-
-            if currentState ~= state then
-                currentState = state
-                for n, t in pairs(activeTracks) do if n ~= state then t:Stop(0.1) end end
-                if activeTracks[state] then activeTracks[state]:Play(0.15) end
-            end
-        end)
     end
 
-    local options = {}
-    for name in pairs(Animations) do table.insert(options, name) end
-    table.sort(options)
+    -- Play start animation using the current active character
+    if currentPack == "Coolkidd Minion" then
+        playSummonAnim(char, 18886065814)
+    elseif currentPack == "PhonkKidd Minion1" then
+        playSummonAnim(char, 82390728991526)
+    elseif currentPack == "PhonkKidd Minion2" then
+        playSummonAnim(char, 113085302078049)
+    elseif currentPack == "1X FURRY MINNION" then
+        playSummonAnim(char, 99649911319033)
+    elseif currentPack == "1X Minion" then
+        playSummonAnim(char, 75804462760596)
+    elseif currentPack == "Two Time Crouch" then
+        playSummonAnim(char, 98606150731314)
+    elseif currentPack == "Mequot Enraged" then
+        playSummonAnim(char, 125740920231913)
+    elseif currentPack == "Krystal Coolkidd Minion Guitar" then
+        playSummonAnim(char, 97039674665952)
 
-    AnimTab:CreateDropdown({
-        Name = "Select Animation Pack",
-        Options = options,
-        CurrentOption = {"Normal"},
-        Flag = "AnimSelect",
-        Callback = function(option)
-            currentPack = option[1]
-            if player.Character then applyPack(player.Character) end
+    elseif currentPack == "Krystal Coolkidd Minion Harp" then
+        playSummonAnim(char, 106838261914685)
+
+    elseif currentPack == "Krystal Coolkidd Minion Saxophone" then
+        playSummonAnim(char, 120998373635026)
+
+    elseif currentPack == "Krystal Coolkidd Minion Tuba" then
+        playSummonAnim(char, 109515187409977)
+    --elseif currentPack == "Slasher Enraged" then
+        --playSummonAnim(char, nil)
+    end
+    --125740920231913
+
+    local currentState = nil
+    
+    movementLoop = RunService.Heartbeat:Connect(function()
+        if not LocalActiveRef or not LocalActiveRef.Value or not char.Parent or humanoid.Health <= 0 then 
+            if movementLoop then movementLoop:Disconnect() end
+            return 
         end
-    })
+        
+        local speed = root.AssemblyLinearVelocity.Magnitude
+        local state = speed < 1 and "Idle" or (speed < 20 and "Walk" or "Run")
 
-    AnimTab:CreateButton({
-        Name = "Reset to Normal",
-        Callback = function()
-            currentPack = "Normal"
-            cleanAndStopTracks()
-            Rayfield:Notify({Title = "Reset", Content = "Restored default animations", Duration = 2})
+        if currentState ~= state then
+            currentState = state
+            for n, t in pairs(activeTracks) do 
+                if n ~= state and n ~= "Start" then 
+                    t:Stop(0.1) 
+                end 
+            end
+            
+            local activeTrack = activeTracks[state]
+            if activeTrack then 
+                -- Lookup custom speed multiplier or fallback to normal speed (1.0)
+                local customSpeed = (packSpeeds[currentPack] and packSpeeds[currentPack][state]) or 1.0
+                
+                activeTrack:Play(0.15)
+                activeTrack:AdjustSpeed(customSpeed)
+            end
         end
-    })
-
-    player.CharacterAdded:Connect(function(char)
-        if not LocalActiveRef or not LocalActiveRef.Value then return end
-        task.wait(1)
-        if currentPack ~= "Normal" then applyPack(char) end
     end)
+end
+
+-- UI Controls & Event Listeners
+local options = {}
+for name in pairs(Animations) do table.insert(options, name) end
+table.sort(options)
+
+AnimTab:CreateDropdown({
+    Name = "Select Animation Pack",
+    Options = options,
+    CurrentOption = {"Normal"},
+    Flag = "AnimSelect",
+    Callback = function(option)
+        currentPack = option[1]
+        local char = LocalPlayer.Character or player.Character
+        if char then applyPack(char) end
+    end
+})
+
+AnimTab:CreateButton({
+    Name = "Reset to Normal",
+    Callback = function()
+        currentPack = "Normal"
+        cleanAndStopTracks()
+        Rayfield:Notify({Title = "Reset", Content = "Restored default animations", Duration = 2})
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if not LocalActiveRef or not LocalActiveRef.Value then return end
+    task.wait(1)
+    if currentPack ~= "Normal" then applyPack(char) end
+end)
 -- ==========================================
 -- FILE CREATION, DOWNLOADS & CONFIGURATION
 -- ==========================================
@@ -644,6 +831,13 @@ local EmoteList = {
         Type = "Local",
         FileName = "LoopingRoom.mp3",
         URL = "https://github.com/f6PlayzOfficalAccount/Forsaken/raw/refs/heads/main/LoopingRooms.mp3"
+    },
+    --rbxassetid://137501116290172
+    ["rbxassetid://137501116290172"] = {
+        ButtonType = "Toggle",
+        ToggleName = "Chronoshift To core (new dev emote btw)",
+        Type = "Roblox",
+        TargetId = "rbxassetid://126587243867268"
     },
     ["rbxassetid://98015369444784"] = {
         ButtonType = "Toggle",
@@ -1257,6 +1451,8 @@ local CharacterList = {
                 Detect = { "rbxassetid://105458270463374" },
                 Replacements = {
                     ["Default"] = "",
+                    ["Trachstone jd"] = {"rbxassetid://121778755277919","rbxassetid://87347358451124"},
+                    ["Screamer JD "] = "rbxassetid://88970503168421",
                     ["Sir Kadee Punch"] = { "rbxassetid://97433060861952", "rbxassetid://117730139864273" },
                     ["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
@@ -1267,6 +1463,7 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Sir Kadee "] = "rbxassetid://82183356141401",
+                    ["Trechstone JD "] = "rbxassetid://107585777749099",
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
                 Duration = 3.8
@@ -1277,6 +1474,7 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Sir Kadee "] = "rbxassetid://73204424721930",
+                    ["Treachstone JD "] = "rbxassetid://93071833991519",
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
                 Duration = 3
@@ -1286,7 +1484,6 @@ local CharacterList = {
     {
         CharacterName = "Slasher",
         Animations = {
-            
             {
                 Name = "Slash",
                 Detect = { "rbxassetid://126830014841198" },
@@ -1323,11 +1520,25 @@ local CharacterList = {
                 }
             },
             {
-                Name = "Introduction",
-                Detect = { "rbxassetid://73797519945529" },
+                Name = "Gashing Wound",
+                Detect = { "rbxassetid://101736016625776" },
                 Replacements = {
                     ["Default"] = "",
-                    ["Pursuer"] = "rbxassetid://70782816210619",
+                    ["The Drifter"] = "rbxassetid://82019004301391",
+                    ["White Pumpkin"] = "rbxassetid://",
+                    ["Pursuer"] = "rbxassetid://",
+                    
+                }
+            },
+            {
+                Name = "Gashing Wound (Survivor )",
+                Detect = { "rbxassetid://109845134167647" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["The Drifter"] = "rbxassetid://102774981961733",
+                    ["White Pumpkin"] = "rbxassetid://",
+                    ["Pursuer"] = "rbxassetid://",
+                    
                 }
             },
             {
@@ -1341,6 +1552,21 @@ local CharacterList = {
                     ["Drifter Slasher"] = "rbxassetid://130280555229440",
                 }
             },
+
+            {
+                Name = "Enraged Start",
+                Detect = { "rbxassetid://85591573377728" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["White Pumpkin"] = "rbxassetid://",
+                    ["Pursuer"] = "rbxassetid://",
+                    ["The Drifter"] = "rbxassetid://121389820850506",
+                    
+                },
+                IsChecking = true,
+                IgnoreWait = true,
+            },
+            
         }
     },
     {
@@ -1353,10 +1579,16 @@ local CharacterList = {
                     ["Default"] = "",
                     ["Bluudude Punch"] = "rbxassetid://134020762419760",
                     ["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                    ["Grolussiam"] = "rbxassetid://76501992854604",
+                    ["Sancho"] = {"rbxassetid://84413781229733","rbxassetid://133990700986998","rbxassetid://84895799077246","rbxassetid://86510482379594"},
                     ["MAFIASO OLD"] = "rbxassetid://80277760801310",
                     ["Tv Time"] = "rbxassetid://130321333480982",
+                    ["Old tv time"] = "rbxassetid://137679730950847",
                     ["Stalker Stab 1"] = "rbxassetid://79710880505841",
                     ["Stalker Stab 2"] = "rbxassetid://70589254357640",
+                    ["Noli STab"] = "rbxassetid://106538427162796",
+                    ["PhonkKidd"] = "rbxassetid://114266653674439",
+                    
                 }
             },
             {
@@ -1367,6 +1599,8 @@ local CharacterList = {
                     ["Bluudude Corrupt Nature"] = "rbxassetid://70383685258424",
                     --["MAFIASO OLD"] = "rbxassetid://",
                     ["Tv Time"] = "rbxassetid://102918795536672",
+                    ["Noli"] = "rbxassetid://107339108383093",
+                    ["PhonkKidd"] = "rbxassetid://109198380290924",
                 },
                 Duration = 1.4
             },
@@ -1380,6 +1614,9 @@ local CharacterList = {
                     ["Stalker Scream"]  = "rbxassetid://86697278751915",
                     ["Stalker Rage"]    = "rbxassetid://81878779344542",
                     ["Tv Time"] = "rbxassetid://78613715992822",
+                    ["Noli"] = "rbxassetid://140042539182927",
+                    ["Krystal"] = "rbxassetid://81724926473026",
+                    ["PhonkKidd"] = "rbxassetid://95605903206627",
                 }
             },
             {
@@ -1390,6 +1627,9 @@ local CharacterList = {
                     --["MAFIASO OLD"] = "rbxassetid://",
                     ["Bluudude"] = "rbxassetid://77357414021059",
                     ["Tv Time"] = "rbxassetid://123019923277556",
+                    ["Noli"] = "rbxassetid://91758760621955",
+                    ["Krystal"] = "rbxassetid://103079163311325",
+                    ["PhonkKidd"] = "rbxassetid://76092296412044",
                 }
             },
             {
@@ -1397,11 +1637,15 @@ local CharacterList = {
                 Detect = { "rbxassetid://106776364623742" },
                 Replacements = {
                     ["Default"] = "rbxassetid://137488556769630",
-                    ["MAFIASO OLD"] = "rbxassetid://",
+                    --["MAFIASO OLD"] = "rbxassetid://",
                     ["Bluudude"] = "rbxassetid://85960461320564",
                     ["Tv Time"] = "rbxassetid://123345437821399",
+                    ["Noli"] = "rbxassetid://93841120533318",
+                    ["Krystal"] = "rbxassetid://102638845899011",
+                    ["PhonkKidd"] = "rbxassetid://134667750748539",
                 },
-                Duration = 4
+                IsChecking = true,
+                IgnoreWait = true,
             },
             {
                 Name = "Walkspeed Hit",
@@ -1411,6 +1655,9 @@ local CharacterList = {
                     ["MAFIASO OLD"] = "rbxassetid://90750159558178",
                     ["Bluudude"] = "rbxassetid://91020848466464",
                     ["Tv Time"] = "rbxassetid://101093551632626",
+                    ["Noli"] = "rbxassetid://92243093913547",
+                    ["Krystal"] = "rbxassetid://120760647437242",
+                    ["PhonkKidd"] = "rbxassetid://97430666814416",
                 }
             },
             {
@@ -1421,6 +1668,9 @@ local CharacterList = {
                     ["MAFIASO OLD"] = "rbxassetid://134030301152023",
                     ["Bluudude"] = "rbxassetid://72715576901515",
                     ["Tv Time"] = "rbxassetid://101093551632626",
+                    ["Noli"] = "rbxassetid://139321362207112",
+                    ["Krystal"] = "rbxassetid://138577533658545",
+                    ["PhonkKidd"] = "rbxassetid://98213511093673",
                 }
             },
             {
@@ -1431,6 +1681,9 @@ local CharacterList = {
                     --["MAFIASO OLD"] = "rbxassetid://",
                     ["Bluudude"] = "rbxassetid://138325799977185",
                     ["Tv Time"] = "rbxassetid://",
+                    ["Noli"] = "rbxassetid://94039555054855",
+                    ["Krystal"] = "rbxassetid://138577533658545",
+                    ["PhonkKidd"] = "rbxassetid://98213511093673",
                 }
             },
             {
@@ -1440,6 +1693,8 @@ local CharacterList = {
                     ["Default"] = "",
                     ["Bluudude"] = "rbxassetid://109869078763813",
                     ["Tv Time"] = "rbxassetid://83576574140705",
+                    ["Krystal"] = "rbxassetid://104765852095054",
+                    ["PhonkKidd"] = "rbxassetid://127981496700255",
                 }
             },
             {
@@ -1449,8 +1704,12 @@ local CharacterList = {
                     ["Default"] = "",
                     ["Bluudude"] = "rbxassetid://125337218572338",
                     ["Tv Time"] = "rbxassetid://90130286239945",
+                    ["Krystal"] = "rbxassetid://119750400299818",
+                    ["PhonkKidd"] = "rbxassetid://121129893934409",
                 },
-                Duration = 3
+                --Duration = 4
+                IsChecking = true,
+                IgnoreWait = true,
             },
             {
                 Name = "Stun End",
@@ -1459,8 +1718,89 @@ local CharacterList = {
                     ["Default"] = "",
                     ["Bluudude"] = "rbxassetid://83635673319417",
                     ["Tv Time/New mafiaso"] = "rbxassetid://90659184218371",
+                    ["Krystal"] = "rbxassetid://128783927544474",
+                    ["PhonkKidd"] = "rbxassetid://88055470907354",
                 }
             }
+        }
+    },
+    {
+        CharacterName = "1x1x1x1",
+        Animations = {
+            {
+                Name = "Slash",
+                Detect = { "rbxassetid://83829782357897" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://114506382930939",
+                    ["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            {
+                Name = "UnstableEye",
+                Detect = { "rbxassetid://103951585216630" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://105747066695777",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            {
+                Name = "RejuvenateTheRotten",
+                Detect = { "rbxassetid://116996902830888" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://77883760356588",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            {
+                Name = "Entanglement ",
+                Detect = { "rbxassetid://133272604443790" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://105026134432828",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            --109777684604906
+            {
+                Name = "Mass Infection ",
+                Detect = { "rbxassetid://99050723653468" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://109777684604906",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            {
+                Name = "STUN start",
+                Detect = { "rbxassetid://106255226024907" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://73444675433359",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
+            {
+                Name = "STUN Loop ",
+                Detect = { "rbxassetid://131392439047269" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://106615061992437",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                },
+                Duration = 4
+            },
+            {
+                Name = "STUN end",
+                Detect = { "rbxassetid://121164654140845" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Marty1x"] = "rbxassetid://83909751976763",
+                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
+                }
+            },
         }
     },
     {
@@ -1525,7 +1865,7 @@ local CharacterList = {
                     ["Art Full"]   = "rbxassetid://92445608014276",
                     ["MS 4 Noli"]  = "rbxassetid://83979618722348",
                 },
-                Duration = 5
+                IsChecking = true,
             },
             {
                 Name = "Observant Teleport",
@@ -1560,7 +1900,7 @@ local CharacterList = {
                     ["Art Full"]   = "rbxassetid://93841120533318",
                     ["MS 4 Noli"]  = "rbxassetid://93841120533318",
                 },
-                Duration = 5,
+                IsChecking = true,
                 
             },
             {
@@ -1585,7 +1925,7 @@ local CharacterList = {
                     ["Art Full"]   = "rbxassetid://94634594529334",
                     ["MS 4 Noli"]  = "rbxassetid://84449964607732",
                 },
-                Duration = 5,
+                IsChecking = true,
             },
             {
                 Name = "Void Rush (Start Dash Combo)",
@@ -1608,7 +1948,8 @@ local CharacterList = {
                     ["Admin Noli"] = "rbxassetid://126654961540956",
                     ["Art Full"]   = "rbxassetid://100358581940485",
                     ["MS 4 Noli"]  = "rbxassetid://84449964607732",
-                }
+                },
+                IsChecking = true,
             },
             {
                 Name = "Void Rush (End Dash)",
@@ -1676,7 +2017,7 @@ local CharacterList = {
                     ["Art Full"]   = "rbxassetid://99926368657642",
                     ["MS 4 Noli"]  = "rbxassetid://122580527125278",
                 },
-                Duration = 3,
+                IsChecking = true,
             },
             {
                 Name = "Stunned End",
@@ -1689,13 +2030,81 @@ local CharacterList = {
             }
         }
     },
+    {
+        CharacterName = "SURVIVORS",
+        Animations = {
+            },
+        },
+    {
+        CharacterName = "Guest 1337",
+        Animations = {
+            {
+                Name = "Punch",
+                Detect = { "rbxassetid://87259391926321" },
+                Replacements = {
+                    ["Default"] = "rbxassetid://87259391926321",
+                    ["SoyG"] = "rbxassetid://87259391926321",
+                    [""] = "rbxassetid://",
+                    ["-"] = "rbxassetid://",
+                    ["--"] = "rbxassetid://",
+                    --["Trechstone JD "] = "rbxassetid://107585777749099",
+                    --["MAFIASO OLD"] = "rbxassetid://",
+                },
+                Duration = 2
+            },
+            {
+                Name = "Parry",
+                Detect = { "rbxassetid://87259391926321" },
+                Replacements = {
+                    ["Default"] = "rbxassetid://87259391926321",
+                    ["SoyG"] = "rbxassetid://119850211147676",
+                    [""] = "rbxassetid://",
+                    ["-"] = "rbxassetid://",
+                    ["--"] = "rbxassetid://",
+                    --["Trechstone JD "] = "rbxassetid://107585777749099",
+                    --["MAFIASO OLD"] = "rbxassetid://",
+                },
+                Duration = 2
+            },
+            {
+                Name = "Block",
+                Detect = { "rbxassetid://72722244508749" },
+                Replacements = {
+                    ["Default"] = "rbxassetid://72722244508749",
+                    ["SoyG"] = "rbxassetid://88557287105521",
+                    [""] = "rbxassetid://",
+                    --["Trechstone JD "] = "rbxassetid://107585777749099",
+                    --["MAFIASO OLD"] = "rbxassetid://",
+                },
+                Duration = 2
+            },
+            {
+                Name = "Charge",
+                Detect = { "rbxassetid://106014898528300" },
+                Replacements = {
+                    ["Default"] = "rbxassetid://0",
+                    ["SoyG"] = "rbxassetid://73502073176819",
+                    ["WEGA "] = "rbxassetid://116771243266481",
+                    --["MAFIASO OLD"] = "rbxassetid://",
+                },
+                IsChecking = true,
+            },
+        }
+    },
 }
+    -- 2. State & Memory Management
+    local characterToggles = {}
+    local selectedTypes = {}
+    local customTracks = {}
+    local activeTimedTracks = {}
+    local activeCheckingTracks = {} -- Tracks active IsChecking loops to prevent stacking
 
     -- 2. State & Memory Management
     local characterToggles = {}
     local selectedTypes = {}
     local customTracks = {}
     local activeTimedTracks = {}
+    local activeCheckingTracks = {}
 
     -- Track Cleanup
     local function clearCustomTracks()
@@ -1707,6 +2116,7 @@ local CharacterList = {
         end
         table.clear(customTracks)
         table.clear(activeTimedTracks)
+        table.clear(activeCheckingTracks)
         if localReset then localReset() end
     end
 
@@ -1721,27 +2131,28 @@ local CharacterList = {
                             local chosenType = selectedTypes[animData.Name]
                             
                             if chosenType == "Default" or chosenType == "" or not chosenType then
-                                return nil, nil
+                                return nil, nil, false, false
                             end
 
                             local replacement = animData.Replacements and animData.Replacements[chosenType]
                             local duration = animData.Duration
+                            local isChecking = animData.IsChecking == true 
+                            local ignoreWait = animData.IgnoreWait == true 
                             
                             if type(replacement) == "table" then
-                                return replacement[math.random(1, #replacement)], duration
+                                return replacement[math.random(1, #replacement)], duration, isChecking, ignoreWait
                             elseif type(replacement) == "string" then
-                                return replacement, duration
+                                return replacement, duration, isChecking, ignoreWait
                             end
                         end
                     end
                 end
             end
         end
-        return nil, nil
+        return nil, nil, false, false
     end
 
     -- 3. Character Animator Hook (Replicates across server via Humanoid.Animator)
-    -- Hook Character Animator with Anti-Spam Check
     local function hookCharacter(char)
         clearCustomTracks()
         if not LocalActiveRef or not LocalActiveRef.Value then return end
@@ -1756,39 +2167,91 @@ local CharacterList = {
             if not LocalActiveRef or not LocalActiveRef.Value then return end
 
             local rawId = animationTrack.Animation.AnimationId
-            local newId, duration = getReplacementAnimation(rawId)
+            local newId, duration, isChecking, ignoreWait = getReplacementAnimation(rawId)
 
             if newId and newId ~= "" then
-                -- ANTI-SPAM: Block execution if this specific animation is already running
-                if duration and activeTimedTracks[newId] then
+                -- ANTI-SPAM: Block execution if already running 
+                if not isChecking and not ignoreWait and duration and activeTimedTracks[newId] then
                     animationTrack:Stop(0)
                     return
                 end
 
-                -- Stop the original played track
-                animationTrack:Stop(0.1)
-                
-                local newAnim = Instance.new("Animation")
-                newAnim.AnimationId = newId
-                
-                local newTrack = animator:LoadAnimation(newAnim)
-                newTrack.Priority = Enum.AnimationPriority.Action4
-                
-                table.insert(customTracks, newTrack)
-                newTrack:Play()
+                -- Handle IsChecking Loop Logic
+                if isChecking then
+                    -- Prevent stacking duplicate loops if already active
+                    if activeCheckingTracks[rawId] and activeCheckingTracks[rawId].IsPlaying then
+                        return
+                    end
 
-                -- Apply Duration & Anti-Spam Lockout
-                if duration then
-                    activeTimedTracks[newId] = true -- Lock track from spamming
-                    newTrack.Looped = false
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = newId
                     
-                    task.delay(duration, function()
-                        if newTrack then
-                            newTrack:Stop(0.1)
-                            newTrack:Destroy()
-                        end
-                        activeTimedTracks[newId] = nil -- Unlock track when finished
+                    local newTrack = animator:LoadAnimation(newAnim)
+                    newTrack.Priority = Enum.AnimationPriority.Action4
+                    newTrack.Looped = true
+                    
+                    table.insert(customTracks, newTrack)
+                    activeCheckingTracks[rawId] = newTrack
+
+                    pcall(function()
+                        newTrack:Play()
                     end)
+
+                    -- Listen to the original track's natural Stop event. 
+                    -- Because we let it play in the background (overridden visually by Action4), 
+                    -- it will fire its Stopped event the exact moment the game stops it (e.g. player stops moving).
+                    local stopConnection
+                    stopConnection = animationTrack.Stopped:Connect(function()
+                        if stopConnection then
+                            stopConnection:Disconnect()
+                            stopConnection = nil
+                        end
+                        if activeCheckingTracks[rawId] == newTrack then
+                            activeCheckingTracks[rawId] = nil
+                        end
+                        if newTrack then
+                            pcall(function()
+                                newTrack:Stop(0.1)
+                                newTrack:Destroy()
+                            end)
+                        end
+                    end)
+
+                    newTrack.Stopped:Connect(function()
+                        if stopConnection then
+                            stopConnection:Disconnect()
+                            stopConnection = nil
+                        end
+                        if activeCheckingTracks[rawId] == newTrack then
+                            activeCheckingTracks[rawId] = nil
+                        end
+                    end)
+                else
+                    -- Standard non-looping animation logic (stops original track immediately)
+                    animationTrack:Stop(0.1)
+                    
+                    local newAnim = Instance.new("Animation")
+                    newAnim.AnimationId = newId
+                    
+                    local newTrack = animator:LoadAnimation(newAnim)
+                    newTrack.Priority = Enum.AnimationPriority.Action4
+                    
+                    table.insert(customTracks, newTrack)
+                    newTrack:Play()
+
+                    -- Apply Duration & Anti-Spam Lockout
+                    if duration then
+                        activeTimedTracks[newId] = true 
+                        newTrack.Looped = false
+                        
+                        task.delay(duration, function()
+                            if newTrack then
+                                newTrack:Stop(0.1)
+                                newTrack:Destroy()
+                            end
+                            activeTimedTracks[newId] = nil 
+                        end)
+                    end
                 end
             end
         end)
@@ -1799,10 +2262,13 @@ local CharacterList = {
         if not LocalActiveRef or not LocalActiveRef.Value then return end
         hookCharacter(char)
     end)
-
     -- 4. Rayfield Interface Construction
     local AnimTab = Window:CreateTab("Anim Changer", 4483362458)
 
+    AnimTab:CreateParagraph({
+        Title = "For idle,walk and run ", 
+        Content = "To change idle walk and run, go to the animation tab, its the forth tab sorry for the inconvinience."
+    })
     -- Master Reset Button
     AnimTab:CreateButton({
         Name = "Reset All Animations to Default",
