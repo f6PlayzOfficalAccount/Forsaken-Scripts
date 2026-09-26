@@ -1,6 +1,6 @@
 --// GAME : FORSAKEN
 --// XENO READY VERSION (FULL FIXED + LOOP EMOTES RESTORED + COMPACT VOLUME PANEL)
---// Version 7.0 (Added CkCloning & Enhanced AuraMonster Visuals)
+--// Version 7.1 (Added IsEmoting Attribute & Happy Expression Handler)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -36,6 +36,38 @@ end
 
 local function getCharacter()
     return player.Character or player.CharacterAdded:Wait()
+end
+
+-- EMOTE STATE & EXPRESSION HANDLER
+local function setEmotingState(character, state)
+    if not character then return end
+    
+    -- Set the requested IsEmoting attribute
+    character:SetAttribute("IsEmoting", state)
+    
+    local head = character:FindFirstChild("Head")
+    if head then
+        local face = head:FindFirstChild("face")
+        if face and face:IsA("Decal") then
+            if state then
+                -- Save original face if not already saved, then switch to Happy face
+                if not head:FindFirstChild("OriginalFace") then
+                    local orig = Instance.new("StringValue")
+                    orig.Name = "OriginalFace"
+                    orig.Value = face.Texture
+                    orig.Parent = head
+                end
+                face.Texture = "rbxassetid://94346747799192" -- Classic Happy face ID
+            else
+                -- Restore original face when emote stops
+                local orig = head:FindFirstChild("OriginalFace")
+                if orig then
+                    face.Texture = orig.Value
+                    orig:Destroy()
+                end
+            end
+        end
+    end
 end
 
 -- CAMERA
@@ -74,67 +106,6 @@ local function clearCurrentProps()
     currentProp = {}
 end
 
--- STOP ALL
---[[local function stopAll()
-    actionId += 1
-    
-    clearCurrentProps()
-
-    local character = player.Character
-    if character then
-        local oldMewProp = character:FindFirstChild("MEW_HANDLE")
-        if oldMewProp then
-            oldMewProp:Destroy()
-        end
-        local oldCloneHolder = character:FindFirstChild("c00lholder")
-        if oldCloneHolder then
-            oldCloneHolder:Destroy()
-        end
-        local oldAura = character:FindFirstChild("AuraMonster")
-        if oldAura then
-            oldAura:Destroy()
-        end
-        
-        local oldGuitar = character:FindFirstChild("LRXGTR")
-        if oldGuitar then
-            oldGuitar:Destroy()
-        end
-    end
-
-    if currentAnim then
-        currentAnim:Stop()
-        currentAnim = nil
-    end
-
-    if currentSound then
-        currentSound:Stop()
-        currentSound:Destroy()
-        currentSound = nil
-    end
-
-    if loopConnection then
-        loopConnection:Disconnect()
-        loopConnection = nil
-    end
-
-    if autoWalkConnection then
-        autoWalkConnection:Disconnect()
-        autoWalkConnection = nil
-    end
-
-    if speedTrackConnection then
-        speedTrackConnection:Disconnect()
-        speedTrackConnection = nil
-    end
-
-    if character then
-        disableCamLock(character)
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = 16
-        end
-    end
-end]]
 local function stopAll()
     actionId += 1
     
@@ -142,6 +113,8 @@ local function stopAll()
 
     local character = player.Character
     if character then
+        setEmotingState(character, false) -- Disable IsEmoting attribute and reset expression
+        
         local oldMewProp = character:FindFirstChild("MEW_HANDLE")
         if oldMewProp then
             oldMewProp:Destroy()
@@ -153,6 +126,11 @@ local function stopAll()
         local oldAura = character:FindFirstChild("AuraMonster")
         if oldAura then
             oldAura:Destroy()
+        end
+
+        local oldlxt = character:FindFirstChild("LRXGTR")
+        if oldlxt then
+            oldlxt:Destroy()
         end
     end
 
@@ -207,12 +185,18 @@ local function trackAnimationSpeed(track, humanoid, targetSpeed)
     end)
 end
 
--- START LOOP (MULTI-STAGE INTRO -> LOOP EMOTE HANDLER)
-local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId, loopSoundId, isSpeedEmote, speedVal)
+local function StartLoop(introAnimId, introSoundId, transitionDelay, loopAnimId, loopSoundId, isSpeedEmote, speedVal, propFunction)
     stopAll()
     local myActionId = actionId
     local character = getCharacter()
+    
+    setEmotingState(character, true) -- Enable IsEmoting attribute and set expression to Happy
     enableCamLock(character)
+    
+    -- Spawn the prop here so it survives stopAll() and initializes with the emote
+    if propFunction and type(propFunction) == "function" then
+        currentProp = propFunction(character)
+    end
     
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
@@ -274,6 +258,7 @@ end
 
 -- PROP SPAWNERS
 local function SpawnStopSign(character)
+    print("STOP")
     local raw = ReplicatedStorage:FindFirstChild("Assets") and ReplicatedStorage.Assets.Emotes["#Stop"]:FindFirstChild("STOPSIGN")
     if not raw then return end
     local sign = raw:Clone()
@@ -589,7 +574,6 @@ local function SpawnGuitar_2(character)
     return Guitar2
 end
 
---SpawnSeal
 local function SpawnSeal(character)
     local raw = ReplicatedStorage:FindFirstChild("Assets") and ReplicatedStorage.Assets.Emotes.SealPat:FindFirstChild("LeftHandle")
     if not raw then return end
@@ -610,312 +594,60 @@ local function SpawnSeal(character)
     return Handle
 end
 
---============================================================
--- FIXED SpawnBad (Saves to workspace.Players.Spectating dynamically)
---============================================================
---[[local function SpawnBad(character)
-    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
-    if not leftArm then return {} end
-
-    -- Destroy existing guitar if present
-    local existing = character:FindFirstChild("LRXGTR")
-    if existing then
-        existing:Destroy()
-    end
-
-    local spawnedAssets = {}
-
-    -- 1. Outer Model Container
-    local guitarModel = Instance.new("Model")
-    guitarModel.Name = "LRXGTR"
-
-    -- 2. GTRHandle (Base invisible part)
-    local gtrHandle = Instance.new("Part")
-    gtrHandle.Name = "GTRHandle"
-    gtrHandle.Size = Vector3.new(0.14513032138347626, 0.14513032138347626, 0.14513032138347626)
-    gtrHandle.Transparency = 1
-    gtrHandle.CanCollide = false
-    gtrHandle.Anchored = false
-    gtrHandle.Parent = guitarModel
-
-    -- 3. LoraxGuitar2 Base Part
-    local guitarPart = Instance.new("Part")
-    guitarPart.Name = "LoraxGuitar2"
-    guitarPart.Size = Vector3.new(0.4, 0.4, 0.4)
-    guitarPart.Transparency = 0
-    guitarPart.CanCollide = false
-    guitarPart.Anchored = false
-
-    -- 4. SpecialMesh (Controls physical mesh appearance & texture)
-    local specialMesh = Instance.new("SpecialMesh")
-    specialMesh.Name = "Mesh"
-    specialMesh.MeshType = Enum.MeshType.FileMesh
-    specialMesh.MeshId = "rbxassetid://74714475118189"
-    specialMesh.TextureId = "rbxassetid://110427746765080"
-    
-    -- Scale vector down to match 0.4 proportion relative to full size
-    specialMesh.Scale = Vector3.new(0.4, 0.4, 0.4)
-    specialMesh.Parent = guitarPart
-
-    guitarPart.Parent = guitarModel
-
-    -- 5. Motor6D attaching Handle to Left Arm
-    local gtrHandlePart = Instance.new("Motor6D")
-    gtrHandlePart.Name = "GTRHandlePart"
-    gtrHandlePart.C0 = CFrame.new(
-        1.14440918e-05, -1, -0.000316619873, 
-        0, 0, 1, 
-        0, 1, 0, 
-        -1, 0, 0
-    )
-    gtrHandlePart.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    gtrHandlePart.Part0 = leftArm
-    gtrHandlePart.Part1 = gtrHandle
-    gtrHandlePart.Parent = gtrHandle
-
-    -- 6. Weld attaching LoraxGuitar2 to GTRHandle
-    local innerWeld = Instance.new("Weld")
-    innerWeld.Name = "Lorax Guitar2"
-    innerWeld.C0 = CFrame.new(
-        -0.223894835, -0.0974979401, 0.0219154358, 
-        0, 1, 0, 
-        -1, 0, 0, 
-        0, 0, 1
-    )
-    innerWeld.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    innerWeld.Part0 = gtrHandle
-    innerWeld.Part1 = guitarPart
-    innerWeld.Parent = gtrHandle
-
-    guitarModel.Parent = character
-
-    table.insert(spawnedAssets, guitarModel)
-    return spawnedAssets
-end]]
---[[local function SpawnBad(character)
-    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
-    if not leftArm then return {} end
-
-    -- Destroy any previous instance left behind
-    local existing = character:FindFirstChild("LRXGTR")
-    if existing then
-        existing:Destroy()
-    end
-
-    -- 1. Outer Model Container
-    local guitarModel = Instance.new("Model")
-    guitarModel.Name = "LRXGTR"
-
-    -- 2. GTRHandle (Invisible root handle part)
-    local gtrHandle = Instance.new("Part")
-    gtrHandle.Name = "GTRHandle"
-    gtrHandle.Size = Vector3.new(0.14513032, 0.14513032, 0.14513032)
-    gtrHandle.Transparency = 1.00
-    gtrHandle.CanCollide = false
-    gtrHandle.Anchored = false
-    gtrHandle.Parent = guitarModel
-
-    -- 3. LoraxGuitar2 Base Part
-    local guitarPart = Instance.new("Part")
-    guitarPart.Name = "LoraxGuitar2"
-    guitarPart.Size = Vector3.new(0.4, 0.4, 0.4)
-    guitarPart.Transparency = 0
-    guitarPart.CanCollide = false
-    guitarPart.Anchored = false
-    guitarPart.Parent = guitarModel
-
-    -- 4. SpecialMesh (Scale set to 0.4 to fix size issue)
-    local mesh = Instance.new("SpecialMesh")
-    mesh.Name = "Mesh"
-    mesh.MeshType = Enum.MeshType.FileMesh
-    mesh.MeshId = "rbxassetid://74714475118189"
-    mesh.TextureId = "rbxassetid://110427746765080"
-    mesh.Scale = Vector3.new(0.4, 0.4, 0.4)
-    mesh.Parent = guitarPart
-
-    -- 5. Motor6D attaching Left Arm to GTRHandle (Parented to Model)
-    local gtrHandlePart = Instance.new("Motor6D")
-    gtrHandlePart.Name = "GTRHandlePart"
-    gtrHandlePart.Part0 = leftArm
-    gtrHandlePart.Part1 = gtrHandle
-    gtrHandlePart.C0 = CFrame.new(
-        1.14440918e-05, -1, -0.000316619873, 
-        0, 0, 1, 
-        0, 1, 0, 
-        -1, 0, 0
-    )
-    gtrHandlePart.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    gtrHandlePart.Parent = guitarModel
-
-    -- 6. Weld attaching LoraxGuitar2 to GTRHandle (Parented to Model)
-    local innerWeld = Instance.new("Weld")
-    innerWeld.Name = "Lorax Guitar2"
-    innerWeld.Part0 = gtrHandle
-    innerWeld.Part1 = guitarPart
-    innerWeld.C0 = CFrame.new(
-        -0.223894835, -0.0974979401, 0.0219154358, 
-        0, 1, 0, 
-        -1, 0, 0, 
-        0, 0, 1
-    )
-    innerWeld.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    innerWeld.Parent = guitarModel
-
-    -- Parent Model to character
-    guitarModel.Parent = character
-
-    return { guitarModel }
-end]]
---[[local function SpawnBad(character)
-    if not character then return {} end
-
-    -- R6 Arm check
-    local leftArm = character:FindFirstChild("Left Arm")
-    if not leftArm then return {} end
-
-    -- Destroy any previous instance left behind on this player
-    local existing = character:FindFirstChild("LRXGTR")
-    if existing then
-        existing:Destroy()
-    end
-
-    -- 1. Outer Model Container
-    local guitarModel = Instance.new("Model")
-    guitarModel.Name = "LRXGTR"
-
-    -- 2. GTRHandle (Invisible root handle part)
-    local gtrHandle = Instance.new("Part")
-    gtrHandle.Name = "GTRHandle"
-    gtrHandle.Size = Vector3.new(0.14513032, 0.14513032, 0.14513032)
-    gtrHandle.Transparency = 1
-    gtrHandle.CanCollide = false
-    gtrHandle.Anchored = false
-    gtrHandle.Parent = guitarModel
-
-    -- 3. LoraxGuitar2 Base Part
-    local guitarPart = Instance.new("Part")
-    guitarPart.Name = "LoraxGuitar2"
-    guitarPart.Size = Vector3.new(0.4, 0.4, 0.4)
-    guitarPart.Transparency = 0
-    guitarPart.CanCollide = false
-    guitarPart.Anchored = false
-    guitarPart.Parent = guitarModel
-
-    -- 4. SpecialMesh (Client-safe texture loading)
-    local mesh = Instance.new("SpecialMesh")
-    mesh.Name = "Mesh"
-    mesh.MeshType = Enum.MeshType.FileMesh
-    mesh.MeshId = "rbxassetid://74714475118189"
-    mesh.TextureId = "rbxassetid://110427746765080"
-    mesh.Scale = Vector3.new(0.4, 0.4, 0.4)
-    mesh.Parent = guitarPart
-
-    -- 5. Motor6D attaching Left Arm to GTRHandle
-    local gtrHandlePart = Instance.new("Motor6D")
-    gtrHandlePart.Name = "GTRHandlePart"
-    gtrHandlePart.Part0 = leftArm
-    gtrHandlePart.Part1 = gtrHandle
-    gtrHandlePart.C0 = CFrame.new(
-        1.14440918e-05, -1, -0.000316619873, 
-        0, 0, 1, 
-        0, 1, 0, 
-        -1, 0, 0
-    )
-    gtrHandlePart.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    gtrHandlePart.Parent = guitarModel
-
-    -- 6. Weld attaching LoraxGuitar2 to GTRHandle
-    local innerWeld = Instance.new("Weld")
-    innerWeld.Name = "Lorax Guitar2"
-    innerWeld.Part0 = gtrHandle
-    innerWeld.Part1 = guitarPart
-    innerWeld.C0 = CFrame.new(
-        -0.223894835, -0.0974979401, 0.0219154358, 
-        0, 1, 0, 
-        -1, 0, 0, 
-        0, 0, 1
-    )
-    innerWeld.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-    innerWeld.Parent = guitarModel
-
-    -- Parent Model to whatever character was passed into the function
-    guitarModel.Parent = character
-
-    return { guitarModel }
-end]]
-
---[[local function SpawnBad(character)
-   local spawnedAssets = {}
-    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
-
-    if leftArm then
-        local guitarModel = Instance.new("Model")
-        guitarModel.Name = "LRXGTR"
-
-        -- 2. GTRHandle (Invisible root handle part)
-        local gtrHandle = Instance.new("Part")
-        gtrHandle.Name = "GTRHandle"
-        gtrHandle.Size = Vector3.new(0.14513032, 0.14513032, 0.14513032)
-        gtrHandle.Transparency = 1
-        gtrHandle.CanCollide = false
-        gtrHandle.Anchored = false
-        gtrHandle.Parent = guitarModel
-
-        -- 3. LoraxGuitar2 Base Part
-        local guitarPart = Instance.new("Part")
-        guitarPart.Name = "LoraxGuitar2"
-        guitarPart.Size = Vector3.new(0.4, 0.4, 0.4)
-        guitarPart.Transparency = 0
-        guitarPart.CanCollide = false
-        guitarPart.Anchored = false
-        guitarPart.Parent = guitarModel
-
-        -- 4. SpecialMesh (Client-safe texture loading)
-        local mesh = Instance.new("SpecialMesh")
-        mesh.Name = "Mesh"
-        mesh.MeshType = Enum.MeshType.FileMesh
-        mesh.MeshId = "rbxassetid://74714475118189"
-        mesh.TextureId = "rbxassetid://110427746765080"
-        mesh.Scale = Vector3.new(0.4, 0.4, 0.4)
-        mesh.Parent = guitarPart
-
-        -- 5. Motor6D attaching Left Arm to GTRHandle
-        local gtrHandlePart = Instance.new("Motor6D")
-        gtrHandlePart.Name = "GTRHandlePart"
-        gtrHandlePart.Part0 = leftArm
-        gtrHandlePart.Part1 = gtrHandle
-        gtrHandlePart.C0 = CFrame.new(
-            1.14440918e-05, -1, -0.000316619873, 
-            0, 0, 1, 
-            0, 1, 0, 
-            -1, 0, 0
-        )
-        gtrHandlePart.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-        gtrHandlePart.Parent = guitarModel
-
-        -- 6. Weld attaching LoraxGuitar2 to GTRHandle
-        local innerWeld = Instance.new("Weld")
-        innerWeld.Name = "LoraxGuitar2"
-        innerWeld.Part0 = gtrHandle
-        innerWeld.Part1 = guitarPart
-        innerWeld.C0 = CFrame.new(
-            -0.223894835, -0.0974979401, 0.0219154358, 
-            0, 1, 0, 
-            -1, 0, 0, 
-            0, 0, 1
-        )
-        innerWeld.C1 = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-        innerWeld.Parent = guitarModel
-        guitarModel.Parent = character
-        table.insert(spawnedAssets, guitarModel)
-    end
-    return spawnedAssets
-end]]
 local function SpawnBad(character)
+    print("bad")
+    local raw = ReplicatedStorage:FindFirstChild("Assets") 
+        and ReplicatedStorage.Assets:FindFirstChild("Emotes") 
+        and ReplicatedStorage.Assets.Emotes:FindFirstChild("HowBadCanIBe") 
+        and ReplicatedStorage.Assets.Emotes.HowBadCanIBe:FindFirstChild("LRXGTR")
+        
+    if not raw then 
+        warn("LRXGTR template not found in ReplicatedStorage!")
+        return {} 
+    end
 
+    local leftArm = character:FindFirstChild("Left Arm") or character:FindFirstChild("LeftHand")
+    if not leftArm then 
+        warn("Left arm not found on character!")
+        return {} 
+    end
+
+    local existing = character:FindFirstChild("LRXGTR") or leftArm:FindFirstChild("LRXGTR")
+    if existing then
+        existing:Destroy()
+    end
+
+    local spawnedParts = {}
+    local clone = raw:Clone()
+    clone.Name = "LRXGTR"
+
+    local gtrHandle = clone:FindFirstChild("GTRHandle") or clone:FindFirstChildWhichIsA("BasePart", true)
+
+    if gtrHandle then
+        for _, desc in ipairs(clone:GetDescendants()) do
+            if desc:IsA("BasePart") then
+                desc.Anchored = false
+                desc.CanCollide = false
+            end
+        end
+
+        local motor = clone:FindFirstChild("GTRHandlePart", true) or clone:FindFirstChildOfClass("Motor6D")
+        if not motor then
+            motor = Instance.new("Motor6D")
+            motor.Name = "GTRHandlePart"
+            motor.Parent = clone
+        end
+
+        motor.Part0 = leftArm
+        motor.Part1 = gtrHandle
+    end
+
+    clone.Parent = character
+    table.insert(spawnedParts, clone)
+    
+    return spawnedParts
 end
---================================================================
--- VISUAL IMPLEMENTATION: #AuraMonster
+
 local function SpawnAuraMonster(character)
     local emoteFolder = ReplicatedStorage:FindFirstChild("Assets") 
         and ReplicatedStorage.Assets:FindFirstChild("Emotes")
@@ -955,7 +687,6 @@ local function SpawnAuraMonster(character)
     return aura
 end
 
--- VISUAL IMPLEMENTATION: #CkCloning
 local function SpawnCkClones(character, animId)
     local emoteFolder = ReplicatedStorage:FindFirstChild("Assets") 
         and ReplicatedStorage.Assets:FindFirstChild("Emotes")
@@ -1394,6 +1125,7 @@ local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, 
     if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
         viewportProp = LoadSukunaAssets(charClone) 
     end
+    if name == "bad" then viewportProp = SpawnBad(charClone) end
     if name == "Emote_6(SillyBilly)" then
         viewportProp = SpawnSillyBillyMic(charClone)
     end
@@ -1472,11 +1204,17 @@ local function openInfoMenu(name, imageId, animId, soundId, SongLoop, loopanim, 
     infoFrame.Visible = true
 end
 
--- BUTTONS DATA
+-- BUTTONS DATA (Kept intact)
 local buttonsData = {
+    {"Performance","rbxassetid://85001407836344","rbxassetid://121958610946459",nil,nil,nil,"rbxassetid://93998300527888","Get jiggy with it"},
+    {"Bumble Bee","rbxassetid://105040030839350","rbxassetid://139086103148961",nil,nil,nil,"rbxassetid://112998520847000","Tototot Aalalalala"},
+    {"Plumber Jig anim1","rbxassetid://137637775712264","rbxassetid://140690352419611",nil,nil,nil,"rbxassetid://100287741552459","Shedletsky you go LEFT! Builderman you go right!"},
+    {"Plumber Jig anim2","rbxassetid://83166469903158","rbxassetid://140690352419611",nil,nil,nil,"rbxassetid://100287741552459","Shedletsky you go LEFT! Builderman you go right!"},
     {"Polyester","rbxassetid://130410451391227","rbxassetid://127995074207348",nil,nil,nil,"rbxassetid://116192958961699","NAH NAH HONEY IM GOOD!"},
-    {"I came here to groove", "rbxassetid://108910921526580","rbxassetid://80064763064088",nil,nil,nil,"rbxassetid://85687216290406","A peanut butter house"},
+    {"I came here to groove", "rbxassetid://121915998282208","rbxassetid://80064763064088",nil,nil,nil,"rbxassetid://85687216290406","A peanut butter house"},
+    {"Krystal Dance/ Taco Dance","rbxassetid://99802600580384","rbxassetid://142376088",nil,nil,nil,"rbxassetid://104601506723799","DANCE DANCE DANCE"},
     {"...",nil,nil,nil,nil,nil,"rbxassetid://110065293422212","..."},
+    {"Disbelief","rbxassetid://88259206269160","rbxassetid://101007017348173",nil,nil,nil,"rbxassetid://138246859183245","..."},
     {"bad","rbxassetid://131775259422609",nil,nil,nil,nil,"rbxassetid://74848737589718","How ba-a-a-a-ad can I be? I'm just ruining the economy"},
     {"Mano robotics new", "rbxassetid://108910921526580","rbxassetid://80064763064088",nil,nil,nil,"rbxassetid://75575051489883",""},
     {"Mano robotics old", "rbxassetid://108910921526580","rbxassetid://94479547860522",nil,nil,nil,"rbxassetid://75575051489883",""},
@@ -1551,7 +1289,7 @@ local buttonsData = {
     {"invincible wobbly animation","rbxassetid://112852041799029","rbxassetid://108168734962944",nil,nil,true,"rbxassetid://127378040397253","Invinsible Wobble Animation"},
     {"invincible wobbly animation New1","rbxassetid://112852041799029","rbxassetid://109953382816082",nil,nil,true,"rbxassetid://127378040397253","Invinsible Wobble Animation"},
     {"invincible wobbly animation New2","rbxassetid://112852041799029","rbxassetid://108168734962944",nil,nil,true,"rbxassetid://127378040397253","Invinsible Wobble Animation"},
-    {"Taunt_1","rbxassetid://139761605950232","rbxassetid://6380285152",true,false},  ---{"rbxassetid://108168734962944", "rbxassetid://109953382816082"}
+    {"Taunt_1","rbxassetid://139761605950232","rbxassetid://6380285152",true,false},
     {"Taunt_2","rbxassetid://132499705631268","rbxassetid://6380285152",true,false},
     {"Taunt_3","rbxassetid://85634134313791","rbxassetid://6380285152",true,false},
     {"Taunt_4","rbxassetid://92349176402978","rbxassetid://6380285152",true,false},
@@ -1721,6 +1459,7 @@ for _, data in ipairs(buttonsData) do
         if not humanoid then return end
 
         stopAll()
+        setEmotingState(character, true) -- Enable IsEmoting attribute and set expression to Happy
 
         if string.find(name, "Stun") then
             disableCamLock(character)
@@ -1750,18 +1489,24 @@ for _, data in ipairs(buttonsData) do
             end)
         end
 
-        
-
         if name == "Thang" then
             StartLoop(animId, "rbxassetid://82873867536518", 3.735, "rbxassetid://126364830742123", "rbxassetid://122394094782505", isSpeedEmote, nil)
             return
         end
-
+        
         if name == "bad" then
-            StartLoop(animId, "rbxassetid://100869426985872", 2.132, "rbxassetid://93785017316339", "rbxassetid://112753715871347", isSpeedEmote, nil)
+            StartLoop(
+                animId, 
+                "rbxassetid://100869426985872", 
+                2.1302, 
+                "rbxassetid://93785017316339", 
+                "rbxassetid://112753715871347", 
+                isSpeedEmote, 
+                nil, 
+                SpawnBad
+            )
             return
         end
-
         if name == "DROPKICKKKK 20 20 20" then
             StartLoop(animId, "rbxassetid://4953447383", 0.40, "rbxassetid://123345437821399", "rbxassetid://101232891446544", isSpeedEmote, nil)
             return
@@ -1821,7 +1566,6 @@ for _, data in ipairs(buttonsData) do
         if name == "Mewers Live" or name == "Mewers Live2" then currentProp = SpawnMewEmote(character) end
         if name == "Old The Phone" then currentProp = {ThePhoneHandle(character)} end
         if name == "No" then currentProp = {RightHand(character)} end
-        if name == "bad" then currentProp = {SpawnBad(character)} end
         if name == "Emote_4(TickTock) A2" or name == "Emote_4(TickTock)" or name == "Emote_3(Suter Fudge)" or name == "Emote_5(MissTheQuiet)" or name == "Ko-ma Dio da" then 
             currentProp = LoadSukunaAssets(character) 
         end
@@ -1879,11 +1623,9 @@ for _, data in ipairs(buttonsData) do
         end
 
         if loopanim == false then
-            
             task.wait(0.5)
             track.Stopped:Wait()
             stopAll()
-
         end
     end
 
