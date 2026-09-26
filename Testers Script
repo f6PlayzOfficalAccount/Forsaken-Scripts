@@ -1,3 +1,4 @@
+print("hi")
     --// 1. LOCAL TRACKING STATE VIA REPLICATEDFIRST OBJECT REFS
     local ReplicatedFirst = game:GetService("ReplicatedFirst")
     local TargetFolder = ReplicatedFirst:FindFirstChild("F6HubFolder")
@@ -134,16 +135,20 @@ HomeTab:CreateParagraph({
    Title = "Rayfield",
    Content = [=[
     << TABS >>
+•  Added Faces To Morphs!!!!
+• Added Two time Mroph changes so it work 
     --IDLE WALK RUN--
-• Added 1X FURRY
-• Added PhonkKidd
-• Added Krystal
-• Added Scared Run (Goffy) 
-• Added Minions
-• Added 2Time Crouch
+• Added Flower MA
+• Added Mequpt (With Enraged)
+• Added "void Bound Test"
+• Added Hevaly Executor (diff one) 
+• Added Nerfed Demoman Guest
+• Added The Pestilence (formally in game codes called \"DOC\")
+• Added Slasher Enraged
 • Lots more
     -- ABILITY CHNAGER -- 
-• Added more ck
+• Added Something but i forgot
+• Added Stuns
     << ADDONS >>
 • None
 ]=]
@@ -151,12 +156,14 @@ HomeTab:CreateParagraph({
 HomeTab:CreateParagraph({
    Title = "Emotes",
    Content = [=[
-• RAAAHHHHHH
-• Street Cat Dance
-• Phonk kidds emote 
-• Meditate
-• Key Bye Key is ...(long name)
-• Low cholesterol 
+• Bumble Bee
+• New 67
+• New Invincible 
+• New Aura Monster
+• Bad emote
+• Plumber Jig (1 and 2)
+• Taco Dance
+• Performace (Before The Ourple Pack)
 • Many More
 ]=]
 })
@@ -485,6 +492,7 @@ local Animations = {
     ["Drifter Slaher"] = { Idle = "rbxassetid://137140789784322", Walk = "rbxassetid://100758925086750", Run = "rbxassetid://83866654755739" },
     ["Who shall i Stalk today"] = { Idle = "rbxassetid://135419935358802", Walk = "rbxassetid://108287960442206", Run = "rbxassetid://109671225388655" },
     ["TV Time"] = { Idle = "rbxassetid://85728609580979", Walk = "rbxassetid://95769893872782", Run = "rbxassetid://95769893872782" },
+    ["TV Time Reworked"] = { Idle = "rbxassetid://85728609580979", Walk = "rbxassetid://98104951389009", Run = "rbxassetid://95769893872782" },
     ["AZURE"] = { Idle = "rbxassetid://83610109883783", Walk = "rbxassetid://106875719128301", Run = "rbxassetid://94531473885454" },
     ["Nos"] = { Idle = "rbxassetid://70639889347646", Walk = "rbxassetid://125580704385106", Run = "rbxassetid://82983377044738" },
     ["The ADMIN?!"] = { Idle = "rbxassetid://119473916907837", Walk = "rbxassetid://89706191899405", Run = "rbxassetid://124250212996049" },
@@ -565,30 +573,61 @@ local Animations = {
     ["Slasher Enraged"] = {Idle = "rbxassetid://109875321916742",
     Walk = "rbxassetid://86451881483688",
     Run = "rbxassetid://93054787145505",},
-    ["Krystal Coolkidd Minion Guitar "] = { 
+    ["Krystal Coolkidd Minion Guitar"] = { 
         Idle = "rbxassetid://86826552226154", 
         Walk = "rbxassetid://71310365796613", 
         Run = "rbxassetid://71310365796613" 
     },
 
-    ["Krystal Coolkidd Minion Harp "] = { 
+    ["Krystal Coolkidd Minion Harp"] = { 
         Idle = "rbxassetid://130953056282982", 
         Walk = "rbxassetid://73664500512977", 
         Run = "rbxassetid://73664500512977" 
     },
 
-    ["Krystal Coolkidd Minion Saxophone "] = { 
+    ["Krystal Coolkidd Minion Saxophone"] = { 
         Idle = "rbxassetid://81193426316345", 
         Walk = "rbxassetid://119935047816879", 
         Run = "rbxassetid://119935047816879" 
     },
 
-    ["Krystal Coolkidd Minion Tuba "] = { 
+    ["Krystal Coolkidd Minion Tuba"] = { 
         Idle = "rbxassetid://89419449787879", 
         Walk = "rbxassetid://86031034742344", 
         Run = "rbxassetid://86031034742344" 
     },
-    --[""] = {},
+    ["Weather Girl JohnDoe"] = {Idle = "rbxassetid://98295372907911",
+        Walk = "rbxassetid://111551510781845",
+        Run = "rbxassetid://79739184735423"},
+    ["Pest (ourpleguy)"] = {Idle = "rbxassetid://94287675905871",
+        Walk = "rbxassetid://131974753832094",
+        Run = "rbxassetid://115805325834498",},
+    ["Pest Enraged"] = {Idle = "rbxassetid://123091465045580",
+        Walk = "rbxassetid://121090999602818",
+        Run = "rbxassetid://93054787145505"},
+    
+    ["TV TIME MINION"] = { Idle = "rbxassetid://138754221537146", Walk = "rbxassetid://126042363045871", Run = "rbxassetid://126042363045871"},
+
+    ["Hevanly Executor"] = {Idle = "rbxassetid://84163453281983",
+        Walk = "rbxassetid://135209481172984",
+        Run = "rbxassetid://124081007185678"},
+
+    ["\"VoidBound Test \""] = {Run = "rbxassetid://124081007185678",
+  Idle = "rbxassetid://84163453281983",
+  Walk = "rbxassetid://135209481172984"},
+    ["Nerfed Demoman Guest"] = {
+  --ParryPunch = rbxassetid://129843313690921
+  --Charge = rbxassetid://97623143664485
+  Idle = "rbxassetid://76822379808155",
+  --Punch = rbxassetid://129843313690921
+  --Block = rbxassetid://115706752305794
+  Run = "rbxassetid://82697414467415",
+  Walk = "rbxassetid://82697414467415"
+  --95014503317223
+},
+    ["Flowery MA"] = {Idle = "rbxassetid://95014503317223",
+        Walk = "rbxassetid://101940202711807",
+        Run = "rbxassetid://71667358180156",},
     --[""] = {},
     --[""] = {},
     --[""] = {},
@@ -605,9 +644,16 @@ local packSpeeds = {
     ["TV Time"] = { Idle = 1.0, Walk = 0.85, Run = 1.25 },
     ["AREA 51"] = { Idle = 1.0, Walk = 0.8, Run = 1.2 },
     ["Stalker Enraged"] = { Idle = 1.0, Walk = 0.75, Run = 1.2 },
+    ["Krystal Coolkidd Minion Guitar"] = { Idle = 1.0, Walk = 1, Run = 1.5 },
+    ["Krystal Coolkidd Minion Harp"] = { Idle = 1.0, Walk = 1, Run = 1.5 },
+    ["Krystal Coolkidd Minion Saxophone"] = { Idle = 1.0, Walk = 1, Run = 1.5 },
+    ["Krystal Coolkidd Minion Tuba"] = { Idle = 1.0, Walk = 1, Run = 1.5 },
+    ["Coolkidd Minion"] = { Idle = 1.0, Walk = 1, Run = 1.5 },
+    --TV TIME MINION
+    ["TV TIME MINION"] = { Idle = 1.0, Walk = 1, Run = 1.9 },
+    ["Nerfed Demoman Guest"]= { Idle = 1.0, Walk = 0.8, Run = 1.6 },
     -- ["Pack Name"] = { Idle = 1.0, Walk = 1.5, Run = 2.0 },
 }
-
 local currentPack = "Normal"
 local activeTracks = {}
 local movementLoop = nil
@@ -700,7 +746,13 @@ local function applyPack(char)
         playSummonAnim(char, 109515187409977)
     --elseif currentPack == "Slasher Enraged" then
         --playSummonAnim(char, nil)
+    --Pest Enraged
+    elseif currentPack == "Pest Enraged" then
+        playSummonAnim(char, 88786572272093)
+    elseif currentPack == "TV TIME MINION" then
+        playSummonAnim(char, 134813951700806)
     end
+    --TV TIME MINION
     --125740920231913
 
     local currentState = nil
@@ -712,13 +764,20 @@ local function applyPack(char)
         end
         
         local speed = root.AssemblyLinearVelocity.Magnitude
-        local state = speed < 1 and "Idle" or (speed < 20 and "Walk" or "Run")
+        
+        -- Determine state with a minor buffer to prevent rapid flickering
+        local state = "Idle"
+        if speed >= 1.5 then
+            state = (speed < 19.5) and "Walk" or "Run"
+        end
 
         if currentState ~= state then
             currentState = state
+            
+            -- Stop other tracks with a smooth fade-out (e.g., 0.25s)
             for n, t in pairs(activeTracks) do 
                 if n ~= state and n ~= "Start" then 
-                    t:Stop(0.1) 
+                    t:Stop(0.25) 
                 end 
             end
             
@@ -727,7 +786,8 @@ local function applyPack(char)
                 -- Lookup custom speed multiplier or fallback to normal speed (1.0)
                 local customSpeed = (packSpeeds[currentPack] and packSpeeds[currentPack][state]) or 1.0
                 
-                activeTrack:Play(0.15)
+                -- Play the new track with a smooth crossfade-in (e.g., 0.25s)
+                activeTrack:Play(0.25)
                 activeTrack:AdjustSpeed(customSpeed)
             end
         end
@@ -1204,18 +1264,44 @@ task.spawn(function()
     end
     print("[LMS Swapper] Clash-proof monitoring thread stopped.")
 end)
-    --================================================--
-    -- MORPHS TAB SECTION
-    --================================================--
-    local MorphTab = Window:CreateTab("Morphs", "user")
 
-    MorphTab:CreateParagraph({
-        Title = "How Morphs work",
-        Content = "So these Morphs will be visuals that only you can see and no one else, for the animations to be correct use the anims from the animation tab for it to work but just know animations can be seen by others aswell."
-    })
+---Hi
+--================================================--
+-- MORPHS TAB SECTION
+--================================================--
+local MorphTab = Window:CreateTab("Morphs", "user")
 
-    -- Core Visual Morph Function
-local function applyMorph(modelRig, morphName)
+MorphTab:CreateParagraph({
+    Title = "How Morphs work",
+    Content = "So these Morphs will be visuals that only you can see and no one else, for the animations to be correct use the anims from the animation tab for it to work but just know animations can be seen by others aswell."
+})
+
+-- Helper path resolution for assets and skins
+local Assets = ReplicatedStorage:WaitForChild("Assets")
+local KillersFolder = Assets:FindFirstChild("Killers")
+local SurvivorsFolder = Assets:FindFirstChild("Survivors")
+local SkinsFolder = Assets:FindFirstChild("Skins")
+local CustomAssetsFolder = ReplicatedStorage:WaitForChild("CustomAssets", true) or ReplicatedStorage:CreateChild("CustomAssets")
+
+-- Helper function to safely read expression assets from a model or skin config without breaking
+local function getExpressionsFromConfig(modelOrSkinFolder, lifeIndex)
+    if not modelOrSkinFolder then return nil end
+    local configModule = modelOrSkinFolder:FindFirstChild("Config")
+    if not configModule or not configModule:IsA("ModuleScript") then return nil end
+
+    local success, configData = pcall(require, configModule)
+    if success and type(configData) == "table" then
+        lifeIndex = lifeIndex or 1
+        if configData.ExpressionsTable and type(configData.ExpressionsTable) == "table" then
+            return configData.ExpressionsTable[lifeIndex] or configData.ExpressionsTable[1]
+        end
+        return configData.Expressions
+    end
+    return nil
+end
+
+-- Core Visual Morph Function with explicit Life-stage Rig welding
+local function applyMorph(survivorModel, morphName, skinContainer, baseContainer, lifeIndex)
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then 
@@ -1239,46 +1325,57 @@ local function applyMorph(modelRig, morphName)
         end
     end
 
-    local morphClone = modelRig:Clone()
-    if morphClone and morphClone:IsA("Model") then
-        -- Step 1: Ensure all BaseParts are unanchored, non-collidable, AND massless
-        for _, descendant in pairs(morphClone:GetDescendants()) do
-            if descendant:IsA("BasePart") then
-                descendant.Anchored = false
-                descendant.Massless = true -- Prevents custom parts from adding weight to the character
-                if descendant.Name ~= "HumanoidRootPart" then
-                    descendant.CanCollide = false
-                end
-            end
-        end
+    -- For TwoTime skins, we always want TwoTime's core base Rig, but life stage parts come from skin container
+    local baseRigTemplate = nil
+    if baseContainer and baseContainer.Name == "TwoTime" then
+        baseRigTemplate = baseContainer:FindFirstChild("Rig")
+    end
+    
+    if not baseRigTemplate then
+        local activeContainer = skinContainer or baseContainer
+        baseRigTemplate = activeContainer:FindFirstChild("Rig") or survivorModel:FindFirstChild("Rig") or survivorModel
+    end
 
-        -- Step 2: Parent and attach parts to the player character
-        for _, part in pairs(morphClone:GetChildren()) do
-            if part.Name == "Humanoid" or part.Name == "HumanoidRootPart" then
-                if part.Name == "HumanoidRootPart" then
-                    local rootJoint = part:FindFirstChild("RootJoint")
-                    if rootJoint then rootJoint:Destroy() end
-
-                    for _, motor in pairs(part:GetChildren()) do
-                        if motor:IsA("Motor6D") then
-                            motor.Parent = char.HumanoidRootPart
-                            motor.Part0 = char.HumanoidRootPart
-                        end
-                    end
-                end
-                part:Destroy()
-            else
-                part.Parent = char
-                if part.Name == "Torso" or part.Name == "UpperTorso" then
-                    part.CFrame = cframe
-                end
-            end
-        end
-        morphClone:Destroy()
-    else
+    local morphClone = baseRigTemplate:Clone()
+    if not morphClone or not morphClone:IsA("Model") then
         warn("Model not found or invalid format!")
         return
     end
+
+    -- Step 2: Ensure all BaseParts are unanchored and massless
+    for _, descendant in pairs(morphClone:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            descendant.Anchored = false
+            descendant.Massless = true 
+            if descendant.Name ~= "HumanoidRootPart" then
+                descendant.CanCollide = false
+            end
+        end
+    end
+
+    -- Step 3: Parent and attach parts to player character
+    for _, part in pairs(morphClone:GetChildren()) do
+        if part.Name == "Humanoid" or part.Name == "HumanoidRootPart" then
+            if part.Name == "HumanoidRootPart" then
+                local rootJoint = part:FindFirstChild("RootJoint")
+                if rootJoint then rootJoint:Destroy() end
+
+                for _, motor in pairs(part:GetChildren()) do
+                    if motor:IsA("Motor6D") then
+                        motor.Parent = char.HumanoidRootPart
+                        motor.Part0 = char.HumanoidRootPart
+                    end
+                end
+            end
+            part:Destroy()
+        else
+            part.Parent = char
+            if part.Name == "Torso" or part.Name == "UpperTorso" then
+                part.CFrame = cframe
+            end
+        end
+    end
+    morphClone:Destroy()
 
     task.wait()
 
@@ -1290,6 +1387,193 @@ local function applyMorph(modelRig, morphName)
     else
         warn("Could not reattach RootJoint: Missing parts.")
     end
+
+    -- Step 4: Overlay Life-stage specific visual model
+    lifeIndex = lifeIndex or 1
+    local lifeFolderOrModel = nil
+
+    local searchContainer = skinContainer or baseContainer
+    if searchContainer then
+        lifeFolderOrModel = searchContainer:FindFirstChild("Life" .. lifeIndex)
+        if not lifeFolderOrModel and searchContainer:FindFirstChild("Config") then
+            lifeFolderOrModel = searchContainer.Config:FindFirstChild("Life" .. lifeIndex)
+        end
+    end
+
+    if not lifeFolderOrModel and baseContainer and baseContainer ~= searchContainer then
+        lifeFolderOrModel = baseContainer:FindFirstChild("Life" .. lifeIndex)
+    end
+
+    if lifeFolderOrModel then
+        local lifeAppearance = lifeFolderOrModel
+        if lifeAppearance:IsA("Folder") then
+            local children = lifeAppearance:GetChildren()
+            if #children > 0 then
+                lifeAppearance = children[math.random(#children)]
+            end
+        end
+
+        local clonedLifeVisual = lifeAppearance:Clone()
+        for _, desc in pairs(clonedLifeVisual:GetDescendants()) do
+            if desc:IsA("BasePart") then
+                desc.Anchored = false
+                desc.CanCollide = false
+                desc.CanTouch = false
+                desc.CanQuery = false
+                desc.Massless = true
+            end
+        end
+
+        for _, lifePart in pairs(clonedLifeVisual:GetChildren()) do
+            if lifePart:IsA("BasePart") then
+                local charMatchPart = char:FindFirstChild(lifePart.Name)
+                if charMatchPart and charMatchPart:IsA("BasePart") then
+                    lifePart.CFrame = charMatchPart.CFrame
+                    local weld = Instance.new("WeldConstraint")
+                    weld.Part0 = charMatchPart
+                    weld.Part1 = lifePart
+                    weld.Parent = lifePart
+                end
+            end
+        end
+        clonedLifeVisual.Parent = char
+    end
+
+    -- Step 5: Setup ExpressionHolder and expression mapping (with Veeronica flat face check)
+    -- Step 5: Setup ExpressionHolder and expression mapping (with Veeronica flat face check & offsets)
+    local expressions = getExpressionsFromConfig(skinContainer or baseContainer, lifeIndex)
+    if not expressions and baseContainer then
+        expressions = getExpressionsFromConfig(baseContainer, lifeIndex)
+    end
+
+    if expressions then
+        local head = char:FindFirstChild("Head")
+        if head then
+            if char:FindFirstChild("ExpressionHolder") then
+                char.ExpressionHolder:Destroy()
+            end
+            
+            -- Check if the current morph/character is Veeronica
+            local isVeeronica = (morphName and string.lower(morphName):find("veeronica")) 
+                or (baseContainer and string.lower(baseContainer.Name):find("veeronica"))
+                or (survivorModel and string.lower(survivorModel.Name):find("veeronica"))
+
+            local IsHelp = (morphName and string.lower(morphName):find("helperbot")) 
+                or (baseContainer and string.lower(baseContainer.Name):find("helperbot"))
+                or (survivorModel and string.lower(survivorModel.Name):find("helperbot"))
+
+
+            local InsertService = game:GetService("InsertService")
+            local success, expressionHolder = pcall(function()
+                if isVeeronica or IsHelp then
+                    local flatPart = Instance.new("Part")
+                    flatPart.Size = Vector3.new(1.2, 1.2, 0.05)
+                    return flatPart
+                else
+                    return InsertService:CreateMeshPartAsync(
+                        "rbxassetid://539723444", 
+                        Enum.CollisionFidelity.Default, 
+                        Enum.RenderFidelity.Automatic
+                    )
+                end
+            end)
+
+            if success and expressionHolder then
+                expressionHolder.Name = "ExpressionHolder"
+                if not isVeeronica or not IsHelp then
+                    expressionHolder.Size = Vector3.new(1.2, 1.2, 1.2)
+                end
+                expressionHolder.Transparency = 1
+                expressionHolder.CanCollide = false
+                expressionHolder.CanQuery = false
+                expressionHolder.CanTouch = false
+                expressionHolder.Massless = true
+
+                -- CONFIGURABLE OFFSET: Change these numbers (X, Y, Z) to shift the face position
+                -- If it's clipping inside or too far, adjust the Z value here:
+                local expressionOffset = isVeeronica and CFrame.new(0, 0.2, -0.65) or CFrame.new(0, 0, 0)
+                local expressionOffset = IsHelp and CFrame.new(0, 0.1, -0.2) or CFrame.new(0, 0, 0)
+
+                -- Apply head CFrame multiplied by the offset cleanly
+                expressionHolder.CFrame = head.CFrame * expressionOffset
+                expressionHolder.Parent = char
+
+                local weld = Instance.new("WeldConstraint")
+                weld.Name = "WeldConstraint"
+                weld.Part0 = head
+                weld.Part1 = expressionHolder
+                weld.Parent = expressionHolder
+            end
+
+            local faceDecal = Instance.new("Decal")
+            faceDecal.Name = "Expression"
+            faceDecal.Face = Enum.NormalId.Front
+            local defaultAsset = expressions.Default or "rbxassetid://0"
+            faceDecal.Texture = defaultAsset
+            faceDecal.Parent = expressionHolder
+
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            
+            if _G.ExpressionConnection then
+                _G.ExpressionConnection:Disconnect()
+            end
+            if _G.EmoteAttrConnection then
+                _G.EmoteAttrConnection:Disconnect()
+            end
+
+            local function updateExpression()
+                local isEmoting = char:GetAttribute("IsEmoting")
+                if isEmoting then
+                    faceDecal.Texture = expressions.Happy or "rbxassetid://1067035"
+                    return
+                end
+
+                if humanoid then
+                    local health = humanoid.Health
+                    if health <= 0 then
+                        faceDecal.Texture = expressions.Dead or defaultAsset
+                    elseif health <= (humanoid.MaxHealth * 0.50) then
+                        faceDecal.Texture = expressions.Injured or expressions.Hurt or defaultAsset
+                    else
+                        faceDecal.Texture = defaultAsset
+                    end
+                end
+            end
+
+            _G.EmoteAttrConnection = char:GetAttributeChangedSignal("IsEmoting"):Connect(function()
+                if not char:IsDescendantOf(workspace) then return end
+                updateExpression()
+            end)
+
+            if humanoid then
+                local lastHealth = humanoid.Health
+                local isHurting = false
+
+                _G.ExpressionConnection = humanoid.HealthChanged:Connect(function(health)
+                    if not char:IsDescendantOf(workspace) then return end
+                    if char:GetAttribute("IsEmoting") then return end
+
+                    if health < lastHealth then
+                        isHurting = true
+                        local hurtAsset = expressions.Hurt or expressions.Injured
+                        if hurtAsset then faceDecal.Texture = hurtAsset end
+
+                        task.delay(0.7, function()
+                            if not char:IsDescendantOf(workspace) then return end
+                            isHurting = false
+                            updateExpression()
+                        end)
+                    end
+
+                    lastHealth = health
+
+                    if not isHurting then
+                        updateExpression()
+                    end
+                end)
+            end
+        end
+    end
     
     Rayfield:Notify({
         Title = "Morph Applied",
@@ -1298,137 +1582,371 @@ local function applyMorph(modelRig, morphName)
     })
 end
 
--- Helper path resolution for assets and skins
-local Assets = ReplicatedStorage:WaitForChild("Assets")
-local KillersFolder = Assets:FindFirstChild("Killers")
-local SurvivorsFolder = Assets:FindFirstChild("Survivors")
-local SkinsFolder = Assets:FindFirstChild("Skins")
-    --================================================--
-    -- KILLERS SECTION
-    --================================================--
-    MorphTab:CreateSection("Killers")
+local Players = game:GetService("Players")
 
-    if KillersFolder then
-        for _, killer in ipairs(KillersFolder:GetChildren()) do
-            local killerName = killer.Name
-            local defaultRig = killer:FindFirstChild("Rig") or killer
-            
-            MorphTab:CreateSection(killerName)
+local function applyPlayerMorph(userId, morphName)
+    local success, result = pcall(function()
+        -- Fetch the player's description and force generate an R6 rig model
+        local humanoidDescription = Players:GetHumanoidDescriptionFromUserId(userId)
+        local model = Players:CreateHumanoidModelFromDescription(humanoidDescription, Enum.HumanoidRigType.R6)
+        return model
+    end)
 
-            -- Default Morph Button
-            if defaultRig then
+    if success and result then
+        result.Name = "PlayerMorph_" .. userId
+        
+        -- Call your main applyMorph function safely with the forced R6 model
+        applyMorph(result, morphName, nil, result, 1)
+        
+        -- Clean up the temporary template model from workspace after it clones
+        task.delay(1, function()
+            if result and result.Parent == workspace then
+                result:Destroy()
+            end
+        end)
+    else
+        Rayfield:Notify({
+            Title = "Morph Error",
+            Content = "Could not load R6 player data for User ID: " .. tostring(userId),
+            Duration = 3
+        })
+    end
+end
+
+--================================================--
+-- TOP QUICK MORPHS SECTION (R6 ONLY)
+--================================================--
+MorphTab:CreateSection("Quick Morphs (R6 Only)")
+
+MorphTab:CreateButton({
+    Name = "Morph into Yourself",
+    Callback = function()
+        applyPlayerMorph(player.UserId, "Yourself")
+    end
+})
+
+local targetUserIdInput = ""
+MorphTab:CreateInput({
+    Name = "Player User ID",
+    PlaceholderText = "Enter User ID here...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Text)
+        targetUserIdInput = Text
+    end
+})
+
+MorphTab:CreateButton({
+    Name = "Morph into Player",
+    Callback = function()
+        local uid = tonumber(targetUserIdInput)
+        if uid then
+            applyPlayerMorph(uid, "Player " .. uid)
+        else
+            Rayfield:Notify({Title = "Error", Content = "Please enter a valid numeric User ID!", Duration = 2})
+        end
+    end
+})
+--================================================--
+-- CUSTOM MORPHS SECTION
+--================================================--
+MorphTab:CreateSection("Custom Morphs (R6 Only)")
+
+local CustomMorphsList = {
+    {
+        Name = "Devesto",
+        GetObject = "https://create.roblox.com/store/asset/133342067180384/Devesto-Die-of-Death",
+        ModelName = "DevestoDOD",
+        Path = nil
+    },
+    {
+        Name = "MeQuot",
+        GetObject = "https://create.roblox.com/store/asset/121306249045101/randomdontuseig",
+        ModelName = "MeQuotDOD",
+        Path = nil
+    },
+    {
+        Name = "Iquot",
+        GetObject = "https://create.roblox.com/store/asset/95649464498909/Iquot-MEQUOT-DIE-OF-DEATH",
+        ModelName = "IquotDOD",
+        Path = "Character"
+    },
+    {
+        Name = "Noliful",
+        GetObject = "https://create.roblox.com/store/asset/103176740041491/Noliful-DIE-OF-DEATH",
+        ModelName = "NolifulDOD",
+        Path = "Character"
+    },
+    {
+        Name = "Dignity Noli",
+        GetObject = "https://create.roblox.com/store/asset/117913712395907/DignityClothing?keyword=Dignity&pageNumber=0&pagePosition=11",
+        ModelName = "Dignity",
+        Path = nil
+    },
+    {
+        Name = "JX1DX1 Noli",
+        GetObject = "https://create.roblox.com/store/asset/113222556726755/JX1DX1Clothing?keyword=Dignity&pagePosition=1",
+        ModelName = "JX1DX1",
+        Path = nil
+    },
+    {
+        Name = "Old Mafiaso",
+        GetObject = "https://create.roblox.com/store/asset/94787042222893/MafiasoC00l?keyword=Mafiaso&pageNumber=0&pagePosition=0",
+        ModelName = "MafiasoOld",
+        Path = nil
+    },
+    {
+        Name = "Old Stalker",
+        GetObject = "https://create.roblox.com/store/asset/285727394/The-Stalker-Reborn",
+        ModelName = "OldStalker",
+        Path = nil
+    },
+    {
+        Name = "New Stalker (useless kinda)",
+        GetObject = "https://create.roblox.com/store/asset/135569549878961/Stalker-Forsaken",
+        ModelName = "Stalker",
+        Path = nil
+    },
+    {
+        Name = "Jeff The Killer",
+        GetObject = "https://create.roblox.com/store/asset/13040125601/Jeff-the-Killer-Doors",
+        ModelName = "JeffKiller",
+        Path = nil
+    },
+    --https://create.roblox.com/store/asset/8114157416/R6-Dummy-Template
+    {
+        Name = "R6 Template",
+        GetObject = "https://create.roblox.com/store/asset/8114157416/R6-Dummy-Template",
+        ModelName = "R6Template",
+        Path = nil
+    },
+}
+
+local customNames = {}
+local customMap = {}
+for _, item in ipairs(CustomMorphsList) do
+    table.insert(customNames, item.Name)
+    customMap[item.Name] = item
+end
+
+local selectedCustomMorph = customNames[1] or ""
+
+if #customNames > 0 then
+    MorphTab:CreateDropdown({
+        Name = "Custom Morphs Dropdown",
+        Options = customNames,
+        CurrentOption = {customNames[1]},
+        Callback = function(Option)
+            selectedCustomMorph = Option[1]
+        end
+    })
+
+    MorphTab:CreateButton({
+        Name = "Morph Selected Custom",
+        Callback = function()
+            local data = customMap[selectedCustomMorph]
+            if data then
+                local modelName = data.ModelName or data.Name
+                local existingAsset = CustomAssetsFolder:FindFirstChild(modelName)
+                
+                if existingAsset then
+                    applyMorph(existingAsset, data.Name, nil, existingAsset, 1)
+                else
+                    local assetId = tonumber(string.match(tostring(data.GetObject), "%d+"))
+                    if assetId then
+                        local success, loadedAsset = pcall(function()
+                            return game:GetObjects("rbxassetid://" .. tostring(assetId))[1]
+                        end)
+                        
+                        if success and loadedAsset then
+                            local finalModel = loadedAsset
+                            if data.Path then
+                                for _, partName in ipairs(string.split(data.Path, ".")) do
+                                    if finalModel then
+                                        finalModel = finalModel:FindFirstChild(partName)
+                                    end
+                                end
+                            end
+                            
+                            if not finalModel then
+                                finalModel = loadedAsset
+                            end
+
+                            finalModel.Name = modelName
+                            finalModel.Parent = CustomAssetsFolder
+                            
+                            if finalModel ~= loadedAsset and loadedAsset.Parent == nil then
+                                loadedAsset:Destroy()
+                            end
+                            
+                            applyMorph(finalModel, data.Name, nil, finalModel, 1)
+                        else
+                            Rayfield:Notify({Title = "Error", Content = "Failed to load via GetObjects for ID: " .. tostring(assetId), Duration = 2})
+                        end
+                    else
+                        Rayfield:Notify({Title = "Error", Content = "Invalid GetObject format!", Duration = 2})
+                    end
+                end
+            end
+        end
+    })
+end
+--================================================--
+-- KILLERS SECTION
+--================================================--
+MorphTab:CreateSection("Killers")
+
+if KillersFolder then
+    for _, killer in ipairs(KillersFolder:GetChildren()) do
+        local killerName = killer.Name
+        local defaultRig = killer:FindFirstChild("Rig") or killer
+        
+        MorphTab:CreateSection(killerName)
+
+        if defaultRig then
+            MorphTab:CreateButton({
+                Name = "Default " .. killerName .. " Morph",
+                Callback = function()
+                    applyMorph(defaultRig, killerName, nil, killer)
+                end
+            })
+        end
+
+        local killerSkinsFolder = nil
+        if SkinsFolder then
+            if SkinsFolder:FindFirstChild("Killers") and SkinsFolder.Killers:FindFirstChild(killerName) then
+                killerSkinsFolder = SkinsFolder.Killers[killerName]
+            elseif SkinsFolder:FindFirstChild(killerName) then
+                killerSkinsFolder = SkinsFolder[killerName]
+            end
+        end
+
+        if killerSkinsFolder then
+            local skinOptions = {}
+            local skinMap = {}
+            local skinContainerMap = {}
+
+            for _, skin in ipairs(killerSkinsFolder:GetChildren()) do
+                local skinRig = skin:FindFirstChild("Rig") or skin
+                table.insert(skinOptions, skin.Name)
+                skinMap[skin.Name] = skinRig
+                skinContainerMap[skin.Name] = skin
+            end
+
+            if #skinOptions > 0 then
+                local selectedSkin = skinOptions[1]
+
+                MorphTab:CreateDropdown({
+                    Name = killerName .. " Skins",
+                    Options = skinOptions,
+                    CurrentOption = {skinOptions[1]},
+                    Callback = function(Option)
+                        selectedSkin = Option[1]
+                    end
+                })
+
                 MorphTab:CreateButton({
-                    Name = "Default " .. killerName .. " Morph",
+                    Name = "Morph Selected " .. killerName .. " Skin",
                     Callback = function()
-                        applyMorph(defaultRig, killerName)
+                        if selectedSkin and skinMap[selectedSkin] then
+                            applyMorph(skinMap[selectedSkin], selectedSkin, skinContainerMap[selectedSkin], killer)
+                        end
                     end
                 })
             end
+        end
+    end
+end
 
-            -- Check for associated Skins
-            local killerSkinsFolder = nil
-            if SkinsFolder then
-                if SkinsFolder:FindFirstChild("Killers") and SkinsFolder.Killers:FindFirstChild(killerName) then
-                    killerSkinsFolder = SkinsFolder.Killers[killerName]
-                elseif SkinsFolder:FindFirstChild(killerName) then
-                    killerSkinsFolder = SkinsFolder[killerName]
+--================================================--
+-- SURVIVORS SECTION
+--================================================--
+if SurvivorsFolder then
+    for _, survivor in ipairs(SurvivorsFolder:GetChildren()) do
+        local survivorName = survivor.Name
+        MorphTab:CreateSection(survivorName)
+
+        local isTwoTime = (survivorName == "TwoTime")
+
+        if isTwoTime then
+            MorphTab:CreateButton({
+                Name = survivorName .. " Life1 Default",
+                Callback = function()
+                    applyMorph(survivor, survivorName .. " Life 1", nil, survivor, 1)
                 end
+            })
+
+            MorphTab:CreateButton({
+                Name = survivorName .. " Life2 Default",
+                Callback = function()
+                    applyMorph(survivor, survivorName .. " Life 2", nil, survivor, 2)
+                end
+            })
+        else
+            MorphTab:CreateButton({
+                Name = "Default " .. survivorName .. " Morph",
+                Callback = function()
+                    applyMorph(survivor, survivorName, nil, survivor, 1)
+                end
+            })
+        end
+
+        local survivorSkinsFolder = nil
+        if SkinsFolder then
+            if SkinsFolder:FindFirstChild("Survivors") and SkinsFolder.Survivors:FindFirstChild(survivorName) then
+                survivorSkinsFolder = SkinsFolder.Survivors[survivorName]
+            elseif SkinsFolder:FindFirstChild(survivorName) then
+                survivorSkinsFolder = SkinsFolder[survivorName]
+            end
+        end
+
+        if survivorSkinsFolder then
+            local skinOptions = {}
+            local skinContainerMap = {}
+
+            for _, skin in ipairs(survivorSkinsFolder:GetChildren()) do
+                table.insert(skinOptions, skin.Name)
+                skinContainerMap[skin.Name] = skin
             end
 
-            if killerSkinsFolder then
-                local skinOptions = {}
-                local skinMap = {}
+            if #skinOptions > 0 then
+                local selectedSkin = skinOptions[1]
 
-                for _, skin in ipairs(killerSkinsFolder:GetChildren()) do
-                    local skinRig = skin:FindFirstChild("Rig") or skin
-                    table.insert(skinOptions, skin.Name)
-                    skinMap[skin.Name] = skinRig
-                end
+                MorphTab:CreateDropdown({
+                    Name = survivorName .. " Skins",
+                    Options = skinOptions,
+                    CurrentOption = {skinOptions[1]},
+                    Callback = function(Option)
+                        selectedSkin = Option[1]
+                    end
+                })
 
-                if #skinOptions > 0 then
-                    local selectedSkin = skinOptions[1]
-
-                    MorphTab:CreateDropdown({
-                        Name = killerName .. " Skins",
-                        Options = skinOptions,
-                        CurrentOption = {skinOptions[1]},
-                        Callback = function(Option)
-                            selectedSkin = Option[1]
+                if isTwoTime then
+                    MorphTab:CreateButton({
+                        Name = "Morph selected Life1 Skin",
+                        Callback = function()
+                            if selectedSkin and skinContainerMap[selectedSkin] then
+                                local targetContainer = skinContainerMap[selectedSkin]
+                                applyMorph(survivor, selectedSkin .. " (Life 1)", targetContainer, survivor, 1)
+                            end
                         end
                     })
 
                     MorphTab:CreateButton({
-                        Name = "Morph Selected " .. killerName .. " Skin",
+                        Name = "Morph selected Life2 Skin",
                         Callback = function()
-                            if selectedSkin and skinMap[selectedSkin] then
-                                applyMorph(skinMap[selectedSkin], selectedSkin)
+                            if selectedSkin and skinContainerMap[selectedSkin] then
+                                local targetContainer = skinContainerMap[selectedSkin]
+                                applyMorph(survivor, selectedSkin .. " (Life 2)", targetContainer, survivor, 2)
                             end
                         end
                     })
-                end
-            end
-        end
-    end
-
-    --================================================--
-    -- SURVIVORS SECTION
-    --================================================--
-    MorphTab:CreateSection("Survivors")
-
-    if SurvivorsFolder then
-        for _, survivor in ipairs(SurvivorsFolder:GetChildren()) do
-            local survivorName = survivor.Name
-            local defaultRig = survivor:FindFirstChild("Rig") or survivor
-            
-            MorphTab:CreateSection(survivorName)
-
-            -- Default Morph Button
-            if defaultRig then
-                MorphTab:CreateButton({
-                    Name = "Default " .. survivorName .. " Morph",
-                    Callback = function()
-                        applyMorph(defaultRig, survivorName)
-                    end
-                })
-            end
-
-            -- Check for associated Skins
-            local survivorSkinsFolder = nil
-            if SkinsFolder then
-                if SkinsFolder:FindFirstChild("Survivors") and SkinsFolder.Survivors:FindFirstChild(survivorName) then
-                    survivorSkinsFolder = SkinsFolder.Survivors[survivorName]
-                elseif SkinsFolder:FindFirstChild(survivorName) then
-                    survivorSkinsFolder = SkinsFolder[survivorName]
-                end
-            end
-
-            if survivorSkinsFolder then
-                local skinOptions = {}
-                local skinMap = {}
-
-                for _, skin in ipairs(survivorSkinsFolder:GetChildren()) do
-                    local skinRig = skin:FindFirstChild("Rig") or skin
-                    table.insert(skinOptions, skin.Name)
-                    skinMap[skin.Name] = skinRig
-                end
-
-                if #skinOptions > 0 then
-                    local selectedSkin = skinOptions[1]
-
-                    MorphTab:CreateDropdown({
-                        Name = survivorName .. " Skins",
-                        Options = skinOptions,
-                        CurrentOption = {skinOptions[1]},
-                        Callback = function(Option)
-                            selectedSkin = Option[1]
-                        end
-                    })
-
+                else
                     MorphTab:CreateButton({
                         Name = "Morph Selected " .. survivorName .. " Skin",
                         Callback = function()
-                            if selectedSkin and skinMap[selectedSkin] then
-                                applyMorph(skinMap[selectedSkin], selectedSkin)
+                            if selectedSkin and skinContainerMap[selectedSkin] then
+                                local targetContainer = skinContainerMap[selectedSkin]
+                                applyMorph(targetContainer, selectedSkin, targetContainer, survivor, 1)
                             end
                         end
                     })
@@ -1436,13 +1954,65 @@ local SkinsFolder = Assets:FindFirstChild("Skins")
             end
         end
     end
-
+end
     --================================================--
     -- ANIM CHANGER TAB (CATEGORIZED BY CHARACTER)
     --================================================--
 
     -- 1. Categorized Configuration List Structure
 local CharacterList = {
+    {
+        CharacterName = "Stuns",
+        Animations = {
+            {
+                Name = "Stun Start",
+                Detect = { "rbxassetid://109869078763813","rbxassetid://0","rbxassetid://106255226024907", "rbxassetid://128923537868786" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Art Full"]   = "rbxassetid://92601588607898",
+                    ["MS 4 Noli"]  = "rbxassetid://128923537868786",
+                    ["Marty1x"] = "rbxassetid://73444675433359",
+                    ["Bluudude"] = "rbxassetid://109869078763813",
+                    ["Tv Time"] = "rbxassetid://83576574140705",
+                    ["Krystal"] = "rbxassetid://104765852095054",
+                    ["PhonkKidd"] = "rbxassetid://127981496700255",
+                }
+            },
+            --{ Idle = "rbxassetid://18885903667", Walk = "rbxassetid://18885906143", Run = "rbxassetid://96571077893813" },
+
+            {
+                Name = "Stun Loop",
+                Detect = { "rbxassetid://125337218572338","rbxassetid://0","rbxassetid://131392439047269" ,"rbxassetid://122580527125278" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Art Full"]   = "rbxassetid://99926368657642",
+                    ["MS 4 Noli"]  = "rbxassetid://122580527125278",
+                    ["Marty1x"] = "rbxassetid://106615061992437",
+                    --["Bluudude"] = "rbxassetid://125337218572338",
+                    ["Tv Time"] = "rbxassetid://90130286239945",
+                    ["Krystal"] = "rbxassetid://119750400299818",
+                    ["PhonkKidd"] = "rbxassetid://121129893934409",
+                },
+                --Duration = 4
+                IsChecking = true,
+                IgnoreWait = false,
+            },
+            {
+                Name = "Stun End",
+                Detect = { "rbxassetid://83635673319417","rbxassetid://2","rbxassetid://121164654140845","rbxassetid://99164529472582" },
+                Replacements = {
+                    ["Default"] = "",
+                    ["Art Full"]   = "rbxassetid://130585724342678",
+                    ["MS 4 Noli"]  = "rbxassetid://99164529472582",
+                    ["Marty1x"] = "rbxassetid://83909751976763",
+                    ["Bluudude"] = "rbxassetid://83635673319417",
+                    ["Tv Time/New mafiaso"] = "rbxassetid://90659184218371",
+                    ["Krystal"] = "rbxassetid://128783927544474",
+                    ["PhonkKidd"] = "rbxassetid://88055470907354",
+                }
+            }
+        }
+    },
     {
         CharacterName = "John Doe",
         Animations = {
@@ -1686,42 +2256,6 @@ local CharacterList = {
                     ["PhonkKidd"] = "rbxassetid://98213511093673",
                 }
             },
-            {
-                Name = "Stun Start",
-                Detect = { "rbxassetid://109869078763813" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Bluudude"] = "rbxassetid://109869078763813",
-                    ["Tv Time"] = "rbxassetid://83576574140705",
-                    ["Krystal"] = "rbxassetid://104765852095054",
-                    ["PhonkKidd"] = "rbxassetid://127981496700255",
-                }
-            },
-            {
-                Name = "Stun Loop",
-                Detect = { "rbxassetid://125337218572338" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Bluudude"] = "rbxassetid://125337218572338",
-                    ["Tv Time"] = "rbxassetid://90130286239945",
-                    ["Krystal"] = "rbxassetid://119750400299818",
-                    ["PhonkKidd"] = "rbxassetid://121129893934409",
-                },
-                --Duration = 4
-                IsChecking = true,
-                IgnoreWait = true,
-            },
-            {
-                Name = "Stun End",
-                Detect = { "rbxassetid://83635673319417" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Bluudude"] = "rbxassetid://83635673319417",
-                    ["Tv Time/New mafiaso"] = "rbxassetid://90659184218371",
-                    ["Krystal"] = "rbxassetid://128783927544474",
-                    ["PhonkKidd"] = "rbxassetid://88055470907354",
-                }
-            }
         }
     },
     {
@@ -1733,6 +2267,7 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Marty1x"] = "rbxassetid://114506382930939",
+                    ["Heavan Executioner"] = "rbxassetid://129405885079224",
                     ["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
             },
@@ -1741,6 +2276,7 @@ local CharacterList = {
                 Detect = { "rbxassetid://103951585216630" },
                 Replacements = {
                     ["Default"] = "",
+                    ["Heavan Executioner"] = "rbxassetid://121298052606985",
                     ["Marty1x"] = "rbxassetid://105747066695777",
                     --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
@@ -1751,6 +2287,7 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Marty1x"] = "rbxassetid://77883760356588",
+                    ["Heavan Executioner"] = "rbxassetid://95059721610029",
                     --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
             },
@@ -1760,6 +2297,7 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Marty1x"] = "rbxassetid://105026134432828",
+                    ["Heavan Executioner"] = "rbxassetid://120845480013823",
                     --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
             },
@@ -1770,37 +2308,11 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "",
                     ["Marty1x"] = "rbxassetid://109777684604906",
+                    ["Heavan Executioner"] = "rbxassetid://92901068575421",
                     --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
                 }
             },
-            {
-                Name = "STUN start",
-                Detect = { "rbxassetid://106255226024907" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Marty1x"] = "rbxassetid://73444675433359",
-                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
-                }
-            },
-            {
-                Name = "STUN Loop ",
-                Detect = { "rbxassetid://131392439047269" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Marty1x"] = "rbxassetid://106615061992437",
-                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
-                },
-                Duration = 4
-            },
-            {
-                Name = "STUN end",
-                Detect = { "rbxassetid://121164654140845" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Marty1x"] = "rbxassetid://83909751976763",
-                    --["STALKER (Both stab)"] = { "rbxassetid://70589254357640", "rbxassetid://79710880505841" },
-                }
-            },
+            
         }
     },
     {
@@ -2000,34 +2512,6 @@ local CharacterList = {
                     ["MS 4 Noli"]  = "rbxassetid://93946634018878",
                 }
             },
-            {
-                Name = "Stunned Start",
-                Detect = { "rbxassetid://128923537868786" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Art Full"]   = "rbxassetid://92601588607898",
-                    ["MS 4 Noli"]  = "rbxassetid://128923537868786",
-                }
-            },
-            {
-                Name = "Stunned Loop",
-                Detect = { "rbxassetid://122580527125278" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Art Full"]   = "rbxassetid://99926368657642",
-                    ["MS 4 Noli"]  = "rbxassetid://122580527125278",
-                },
-                IsChecking = true,
-            },
-            {
-                Name = "Stunned End",
-                Detect = { "rbxassetid://99164529472582" },
-                Replacements = {
-                    ["Default"] = "",
-                    ["Art Full"]   = "rbxassetid://130585724342678",
-                    ["MS 4 Noli"]  = "rbxassetid://99164529472582",
-                }
-            }
         }
     },
     {
@@ -2044,9 +2528,9 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "rbxassetid://87259391926321",
                     ["SoyG"] = "rbxassetid://87259391926321",
-                    [""] = "rbxassetid://",
-                    ["-"] = "rbxassetid://",
-                    ["--"] = "rbxassetid://",
+                    ["Nerfed Demoman"] = "rbxassetid://129843313690921",
+                    --["-"] = "rbxassetid://",
+                    --["--"] = "rbxassetid://",
                     --["Trechstone JD "] = "rbxassetid://107585777749099",
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
@@ -2058,9 +2542,10 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "rbxassetid://87259391926321",
                     ["SoyG"] = "rbxassetid://119850211147676",
-                    [""] = "rbxassetid://",
-                    ["-"] = "rbxassetid://",
-                    ["--"] = "rbxassetid://",
+                    ["Nerfed Demoman"] = "rbxassetid://129843313690921",
+                    --[""] = "rbxassetid://",
+                    --["-"] = "rbxassetid://",
+                    --["--"] = "rbxassetid://",
                     --["Trechstone JD "] = "rbxassetid://107585777749099",
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
@@ -2072,7 +2557,9 @@ local CharacterList = {
                 Replacements = {
                     ["Default"] = "rbxassetid://72722244508749",
                     ["SoyG"] = "rbxassetid://88557287105521",
-                    [""] = "rbxassetid://",
+                    ["Nerfed Demoman"] = "rbxassetid://115706752305794",
+                    ["Paintballer (With Prop)"] = "rbxassetid://82036084568393"
+                    --[""] = "rbxassetid://",
                     --["Trechstone JD "] = "rbxassetid://107585777749099",
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
@@ -2085,6 +2572,8 @@ local CharacterList = {
                     ["Default"] = "rbxassetid://0",
                     ["SoyG"] = "rbxassetid://73502073176819",
                     ["WEGA "] = "rbxassetid://116771243266481",
+                    ["Nerfed Demoman"] = "rbxassetid://97623143664485",
+                    
                     --["MAFIASO OLD"] = "rbxassetid://",
                 },
                 IsChecking = true,
@@ -2092,19 +2581,12 @@ local CharacterList = {
         }
     },
 }
-    -- 2. State & Memory Management
+-- 2. State & Memory Management
     local characterToggles = {}
     local selectedTypes = {}
     local customTracks = {}
     local activeTimedTracks = {}
     local activeCheckingTracks = {} -- Tracks active IsChecking loops to prevent stacking
-
-    -- 2. State & Memory Management
-    local characterToggles = {}
-    local selectedTypes = {}
-    local customTracks = {}
-    local activeTimedTracks = {}
-    local activeCheckingTracks = {}
 
     -- Track Cleanup
     local function clearCustomTracks()
@@ -2120,6 +2602,86 @@ local CharacterList = {
         if localReset then localReset() end
     end
 
+    -- Helper function to trigger the RabbidRig prop fade for Guest 
+-- Helper function to trigger the RabbidRig prop fade for Guest
+    local function triggerGuestProp(char, animName)
+        if animName == "Paintballer (With Prop)" then
+            print("Block animation triggered for Guest! Looking for asset...")
+            
+            local assets = ReplicatedStorage:FindFirstChild("Assets")
+            local skinFolder = nil
+            
+            if assets then
+                local skins = assets:FindFirstChild("Skins")
+                if skins then
+                    local survivors = skins:FindFirstChild("Survivors")
+                    if survivors then
+                        local guest = survivors:FindFirstChild("Guest1337")
+                        if guest then
+                            skinFolder = guest:FindFirstChild("RabbidsPaintballGuest")
+                        end
+                    end
+                end
+            end
+            
+            if skinFolder then
+                print("Found RabbidsPaintballGuest folder!")
+                local rigFolder = skinFolder:FindFirstChild("Rig")
+                local originalRig = rigFolder and rigFolder:FindFirstChild("RabbidRig")
+                
+                if originalRig then
+                    print("Found original RabbidRig template!")
+                    local activeRabbidRig = char:FindFirstChild("ActiveRabbidRig")
+                    
+                    if not activeRabbidRig then
+                        activeRabbidRig = originalRig:Clone()
+                        activeRabbidRig.Name = "ActiveRabbidRig"
+                        activeRabbidRig.Parent = char
+                        
+                        -- Hide all parts initially and weld them to the character
+                        local rootPart = char:FindFirstChild("HumanoidRootPart")
+                        for _, v in ipairs(activeRabbidRig:GetChildren()) do
+                            if v:IsA("BasePart") then
+                                v.Transparency = 1
+                                if rootPart and v.Name ~= "RabbitRoot" then
+                                    local weld = Instance.new("WeldConstraint")
+                                    weld.Part0 = rootPart
+                                    weld.Part1 = v
+                                    weld.Parent = v
+                                end
+                            end
+                        end
+                        print("Successfully cloned and welded ActiveRabbidRig to character!")
+                    end
+                    
+                    local tweenService = game:GetService("TweenService")
+                    
+                    -- Fade parts IN
+                    for _, v in ipairs(activeRabbidRig:GetChildren()) do
+                        if v:IsA("BasePart") and v.Name ~= "RabbitRoot" then
+                            tweenService:Create(v, TweenInfo.new(0.2), {Transparency = 0}):Play()
+                        end
+                    end
+                    
+                    -- Safety fallback: Fade parts OUT after exactly 2 seconds
+                    task.delay(2.0, function()
+                        if activeRabbidRig and activeRabbidRig.Parent then
+                            for _, v in ipairs(activeRabbidRig:GetChildren()) do
+                                if v:IsA("BasePart") and v.Name ~= "RabbitRoot" then
+                                    tweenService:Create(v, TweenInfo.new(0.3), {Transparency = 1}):Play()
+                                end
+                            end
+                        end
+                    end)
+                else
+                    warn("Could not find RabbidRig inside the Rig folder!")
+                end
+            else
+                warn("Could not locate RabbidsPaintballGuest folder via ReplicatedStorage path!")
+            end
+        end
+    end
+
     -- Animation Replacement Detection
     local function getReplacementAnimation(animId)
         for _, charData in ipairs(CharacterList) do
@@ -2131,7 +2693,7 @@ local CharacterList = {
                             local chosenType = selectedTypes[animData.Name]
                             
                             if chosenType == "Default" or chosenType == "" or not chosenType then
-                                return nil, nil, false, false
+                                return nil, nil, false, false, animData.Name
                             end
 
                             local replacement = animData.Replacements and animData.Replacements[chosenType]
@@ -2140,16 +2702,16 @@ local CharacterList = {
                             local ignoreWait = animData.IgnoreWait == true 
                             
                             if type(replacement) == "table" then
-                                return replacement[math.random(1, #replacement)], duration, isChecking, ignoreWait
+                                return replacement[math.random(1, #replacement)], duration, isChecking, ignoreWait, animData.Name
                             elseif type(replacement) == "string" then
-                                return replacement, duration, isChecking, ignoreWait
+                                return replacement, duration, isChecking, ignoreWait, animData.Name
                             end
                         end
                     end
                 end
             end
         end
-        return nil, nil, false, false
+        return nil, nil, false, false, nil
     end
 
     -- 3. Character Animator Hook (Replicates across server via Humanoid.Animator)
@@ -2167,7 +2729,10 @@ local CharacterList = {
             if not LocalActiveRef or not LocalActiveRef.Value then return end
 
             local rawId = animationTrack.Animation.AnimationId
-            local newId, duration, isChecking, ignoreWait = getReplacementAnimation(rawId)
+            local newId, duration, isChecking, ignoreWait, animName = getReplacementAnimation(rawId)
+
+            -- Trigger the Guest prop animation logic if name matches
+            triggerGuestProp(char, animName)
 
             if newId and newId ~= "" then
                 -- ANTI-SPAM: Block execution if already running 
@@ -2197,9 +2762,6 @@ local CharacterList = {
                         newTrack:Play()
                     end)
 
-                    -- Listen to the original track's natural Stop event. 
-                    -- Because we let it play in the background (overridden visually by Action4), 
-                    -- it will fire its Stopped event the exact moment the game stops it (e.g. player stops moving).
                     local stopConnection
                     stopConnection = animationTrack.Stopped:Connect(function()
                         if stopConnection then
