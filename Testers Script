@@ -663,7 +663,10 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 local function playSummonAnim(char, ID)
-    local humanoid = char:WaitForChild("Humanoid")
+    if not ID then return end
+    local humanoid = char:WaitForChild("Humanoid", 3)
+    if not humanoid then return end
+    
     local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
 
     if currentSummonTrack and currentSummonTrack.IsPlaying then
@@ -686,7 +689,9 @@ local function cleanAndStopTracks()
     end
     for _, track in pairs(activeTracks) do
         if track then 
-            pcall(function() track:Stop(0.1) track:Destroy() end)
+            pcall(function() 
+                track:Stop(0.1) 
+            end)
         end
     end
     table.clear(activeTracks)
@@ -694,31 +699,48 @@ end
 
 local function applyPack(char)
     cleanAndStopTracks()
-    if not LocalActiveRef or not LocalActiveRef.Value then return end
+    
+    -- Safety check: ensure active reference exists and is true
+    if not LocalActiveRef or not LocalActiveRef.Value then 
+        print("[Morph Debug] LocalActiveRef is false or nil!")
+        return 
+    end
 
-    local humanoid = char:WaitForChild("Humanoid")
-    local root = char:WaitForChild("HumanoidRootPart")
+    local humanoid = char:WaitForChild("Humanoid", 3)
+    local root = char:WaitForChild("HumanoidRootPart", 3)
+    if not humanoid or not root then return end
+    
     local animate = char:FindFirstChild("Animate")
 
     if currentPack == "Normal" then return end
     if animate then animate.Disabled = true end
 
     local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+    
+    -- Safety check: ensure Animations table exists and has the current pack
+    if not Animations or not Animations[currentPack] then
+        print("[Morph Debug] Animations pack not found for: " .. tostring(currentPack))
+        return
+    end
+    
     local pack = Animations[currentPack]
-    if not pack then return end
     
     for state, id in pairs(pack) do
         if id ~= "" and id ~= "rbxassetid://" then
             local anim = Instance.new("Animation")
-            anim.AnimationId = id
-            local track = animator:LoadAnimation(anim)
-            track.Priority = Enum.AnimationPriority.Action
-            track.Looped = true
-            activeTracks[state] = track
+            anim.AnimationId = tostring(id)
+            local success, track = pcall(function()
+                return animator:LoadAnimation(anim)
+            end)
+            if success and track then
+                track.Priority = Enum.AnimationPriority.Action
+                track.Looped = true
+                activeTracks[state] = track
+            end
         end
     end
 
-    -- Play start animation using the current active character
+    -- Play start animation mappings
     if currentPack == "Coolkidd Minion" then
         playSummonAnim(char, 18886065814)
     elseif currentPack == "PhonkKidd Minion1" then
@@ -735,37 +757,27 @@ local function applyPack(char)
         playSummonAnim(char, 125740920231913)
     elseif currentPack == "Krystal Coolkidd Minion Guitar" then
         playSummonAnim(char, 97039674665952)
-
     elseif currentPack == "Krystal Coolkidd Minion Harp" then
         playSummonAnim(char, 106838261914685)
-
     elseif currentPack == "Krystal Coolkidd Minion Saxophone" then
         playSummonAnim(char, 120998373635026)
-
     elseif currentPack == "Krystal Coolkidd Minion Tuba" then
         playSummonAnim(char, 109515187409977)
-    --elseif currentPack == "Slasher Enraged" then
-        --playSummonAnim(char, nil)
-    --Pest Enraged
     elseif currentPack == "Pest Enraged" then
         playSummonAnim(char, 88786572272093)
     elseif currentPack == "TV TIME MINION" then
         playSummonAnim(char, 134813951700806)
     end
-    --TV TIME MINION
-    --125740920231913
 
     local currentState = nil
     
     movementLoop = RunService.Heartbeat:Connect(function()
         if not LocalActiveRef or not LocalActiveRef.Value or not char.Parent or humanoid.Health <= 0 then 
-            if movementLoop then movementLoop:Disconnect() end
+            cleanAndStopTracks()
             return 
         end
         
         local speed = root.AssemblyLinearVelocity.Magnitude
-        
-        -- Determine state with a minor buffer to prevent rapid flickering
         local state = "Idle"
         if speed >= 1.5 then
             state = (speed < 19.5) and "Walk" or "Run"
@@ -774,7 +786,6 @@ local function applyPack(char)
         if currentState ~= state then
             currentState = state
             
-            -- Stop other tracks with a smooth fade-out (e.g., 0.25s)
             for n, t in pairs(activeTracks) do 
                 if n ~= state and n ~= "Start" then 
                     t:Stop(0.25) 
@@ -783,10 +794,7 @@ local function applyPack(char)
             
             local activeTrack = activeTracks[state]
             if activeTrack then 
-                -- Lookup custom speed multiplier or fallback to normal speed (1.0)
                 local customSpeed = (packSpeeds[currentPack] and packSpeeds[currentPack][state]) or 1.0
-                
-                -- Play the new track with a smooth crossfade-in (e.g., 0.25s)
                 activeTrack:Play(0.25)
                 activeTrack:AdjustSpeed(customSpeed)
             end
@@ -1269,6 +1277,12 @@ end)
 --================================================--
 -- MORPHS TAB SECTION
 --================================================--
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local InsertService = game:GetService("InsertService")
+
+local player = Players.LocalPlayer
+
 local MorphTab = Window:CreateTab("Morphs", "user")
 
 MorphTab:CreateParagraph({
@@ -1281,9 +1295,12 @@ local Assets = ReplicatedStorage:WaitForChild("Assets")
 local KillersFolder = Assets:FindFirstChild("Killers")
 local SurvivorsFolder = Assets:FindFirstChild("Survivors")
 local SkinsFolder = Assets:FindFirstChild("Skins")
-local CustomAssetsFolder = ReplicatedStorage:WaitForChild("CustomAssets", true) or ReplicatedStorage:CreateChild("CustomAssets")
+local CustomAssetsFolder = ReplicatedStorage:FindFirstChild("CustomAssets") 
+    or ReplicatedStorage:FindFirstChild("CustomAssets") 
+    or Instance.new("Folder", ReplicatedStorage)
+CustomAssetsFolder.Name = "CustomAssets"
 
--- Helper function to safely read expression assets from a model or skin config without breaking
+-- Helper function to safely read expression assets from a model or skin config
 local function getExpressionsFromConfig(modelOrSkinFolder, lifeIndex)
     if not modelOrSkinFolder then return nil end
     local configModule = modelOrSkinFolder:FindFirstChild("Config")
@@ -1325,7 +1342,6 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
         end
     end
 
-    -- For TwoTime skins, we always want TwoTime's core base Rig, but life stage parts come from skin container
     local baseRigTemplate = nil
     if baseContainer and baseContainer.Name == "TwoTime" then
         baseRigTemplate = baseContainer:FindFirstChild("Rig")
@@ -1333,7 +1349,12 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
     
     if not baseRigTemplate then
         local activeContainer = skinContainer or baseContainer
-        baseRigTemplate = activeContainer:FindFirstChild("Rig") or survivorModel:FindFirstChild("Rig") or survivorModel
+        baseRigTemplate = activeContainer and (activeContainer:FindFirstChild("Rig") or activeContainer) or survivorModel:FindFirstChild("Rig") or survivorModel
+    end
+
+    if not baseRigTemplate then
+        warn("Base Rig Template could not be resolved for morph: " .. tostring(morphName))
+        return
     end
 
     local morphClone = baseRigTemplate:Clone()
@@ -1342,7 +1363,6 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
         return
     end
 
-    -- Step 2: Ensure all BaseParts are unanchored and massless
     for _, descendant in pairs(morphClone:GetDescendants()) do
         if descendant:IsA("BasePart") then
             descendant.Anchored = false
@@ -1353,7 +1373,6 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
         end
     end
 
-    -- Step 3: Parent and attach parts to player character
     for _, part in pairs(morphClone:GetChildren()) do
         if part.Name == "Humanoid" or part.Name == "HumanoidRootPart" then
             if part.Name == "HumanoidRootPart" then
@@ -1388,7 +1407,7 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
         warn("Could not reattach RootJoint: Missing parts.")
     end
 
-    -- Step 4: Overlay Life-stage specific visual model
+    -- Overlay Life-stage specific visual model
     lifeIndex = lifeIndex or 1
     local lifeFolderOrModel = nil
 
@@ -1439,8 +1458,7 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
         clonedLifeVisual.Parent = char
     end
 
-    -- Step 5: Setup ExpressionHolder and expression mapping (with Veeronica flat face check)
-    -- Step 5: Setup ExpressionHolder and expression mapping (with Veeronica flat face check & offsets)
+    -- Setup ExpressionHolder and expression mapping
     local expressions = getExpressionsFromConfig(skinContainer or baseContainer, lifeIndex)
     if not expressions and baseContainer then
         expressions = getExpressionsFromConfig(baseContainer, lifeIndex)
@@ -1453,7 +1471,6 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
                 char.ExpressionHolder:Destroy()
             end
             
-            -- Check if the current morph/character is Veeronica
             local isVeeronica = (morphName and string.lower(morphName):find("veeronica")) 
                 or (baseContainer and string.lower(baseContainer.Name):find("veeronica"))
                 or (survivorModel and string.lower(survivorModel.Name):find("veeronica"))
@@ -1462,8 +1479,6 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
                 or (baseContainer and string.lower(baseContainer.Name):find("helperbot"))
                 or (survivorModel and string.lower(survivorModel.Name):find("helperbot"))
 
-
-            local InsertService = game:GetService("InsertService")
             local success, expressionHolder = pcall(function()
                 if isVeeronica or IsHelp then
                     local flatPart = Instance.new("Part")
@@ -1489,12 +1504,10 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
                 expressionHolder.CanTouch = false
                 expressionHolder.Massless = true
 
-                -- CONFIGURABLE OFFSET: Change these numbers (X, Y, Z) to shift the face position
-                -- If it's clipping inside or too far, adjust the Z value here:
-                local expressionOffset = isVeeronica and CFrame.new(0, 0.2, -0.65) or CFrame.new(0, 0, 0)
-                local expressionOffset = IsHelp and CFrame.new(0, 0.1, -0.2) or CFrame.new(0, 0, 0)
+                local expressionOffset = isVeeronica and CFrame.new(0, 0.2, -0.65) or (IsHelp and CFrame.new(0, 0.1, -0.2) or CFrame.new(0, 0, 0))
+                
+                local expressionOffset = IsHelp and CFrame.new(0, 0.1, -0.025) or (IsHelp and CFrame.new(0, 0.1, -0.2) or CFrame.new(0, 0, 0))
 
-                -- Apply head CFrame multiplied by the offset cleanly
                 expressionHolder.CFrame = head.CFrame * expressionOffset
                 expressionHolder.Parent = char
 
@@ -1582,11 +1595,8 @@ local function applyMorph(survivorModel, morphName, skinContainer, baseContainer
     })
 end
 
-local Players = game:GetService("Players")
-
 local function applyPlayerMorph(userId, morphName)
     local success, result = pcall(function()
-        -- Fetch the player's description and force generate an R6 rig model
         local humanoidDescription = Players:GetHumanoidDescriptionFromUserId(userId)
         local model = Players:CreateHumanoidModelFromDescription(humanoidDescription, Enum.HumanoidRigType.R6)
         return model
@@ -1594,11 +1604,7 @@ local function applyPlayerMorph(userId, morphName)
 
     if success and result then
         result.Name = "PlayerMorph_" .. userId
-        
-        -- Call your main applyMorph function safely with the forced R6 model
         applyMorph(result, morphName, nil, result, 1)
-        
-        -- Clean up the temporary template model from workspace after it clones
         task.delay(1, function()
             if result and result.Parent == workspace then
                 result:Destroy()
@@ -1646,78 +1652,29 @@ MorphTab:CreateButton({
         end
     end
 })
+
 --================================================--
 -- CUSTOM MORPHS SECTION
 --================================================--
 MorphTab:CreateSection("Custom Morphs (R6 Only)")
 
 local CustomMorphsList = {
+    { Name = "Devesto", GetObject = "133342067180384", ModelName = "DevestoDOD", Path = nil },
+    { Name = "MeQuot", GetObject = "121306249045101", ModelName = "MeQuotDOD", Path = nil },
+    { Name = "Iquot", GetObject = "95649464498909", ModelName = "IquotDOD", Path = "Character" },
+    { Name = "Noliful", GetObject = "103176740041491", ModelName = "NolifulDOD", Path = "Character" },
+    { Name = "Dignity Noli", GetObject = "117913712395907", ModelName = "Dignity", Path = nil },
+    { Name = "JX1DX1 Noli", GetObject = "113222556726755", ModelName = "JX1DX1", Path = nil },
+    { Name = "Old Mafiaso", GetObject = "94787042222893", ModelName = "MafiasoOld", Path = nil },
+    { Name = "Old Stalker", GetObject = "285727394", ModelName = "OldStalker", Path = nil },
+    { Name = "New Stalker (useless kinda)", GetObject = "135569549878961", ModelName = "Stalker", Path = nil },
+    { Name = "Jeff The Killer", GetObject = "13040125601", ModelName = "JeffKiller", Path = nil },
+    { Name = "R6 Template", GetObject = "8114157416", ModelName = "R6Template", Path = nil },
     {
-        Name = "Devesto",
-        GetObject = "https://create.roblox.com/store/asset/133342067180384/Devesto-Die-of-Death",
-        ModelName = "DevestoDOD",
-        Path = nil
-    },
-    {
-        Name = "MeQuot",
-        GetObject = "https://create.roblox.com/store/asset/121306249045101/randomdontuseig",
-        ModelName = "MeQuotDOD",
-        Path = nil
-    },
-    {
-        Name = "Iquot",
-        GetObject = "https://create.roblox.com/store/asset/95649464498909/Iquot-MEQUOT-DIE-OF-DEATH",
-        ModelName = "IquotDOD",
-        Path = "Character"
-    },
-    {
-        Name = "Noliful",
-        GetObject = "https://create.roblox.com/store/asset/103176740041491/Noliful-DIE-OF-DEATH",
-        ModelName = "NolifulDOD",
-        Path = "Character"
-    },
-    {
-        Name = "Dignity Noli",
-        GetObject = "https://create.roblox.com/store/asset/117913712395907/DignityClothing?keyword=Dignity&pageNumber=0&pagePosition=11",
-        ModelName = "Dignity",
-        Path = nil
-    },
-    {
-        Name = "JX1DX1 Noli",
-        GetObject = "https://create.roblox.com/store/asset/113222556726755/JX1DX1Clothing?keyword=Dignity&pagePosition=1",
-        ModelName = "JX1DX1",
-        Path = nil
-    },
-    {
-        Name = "Old Mafiaso",
-        GetObject = "https://create.roblox.com/store/asset/94787042222893/MafiasoC00l?keyword=Mafiaso&pageNumber=0&pagePosition=0",
-        ModelName = "MafiasoOld",
-        Path = nil
-    },
-    {
-        Name = "Old Stalker",
-        GetObject = "https://create.roblox.com/store/asset/285727394/The-Stalker-Reborn",
-        ModelName = "OldStalker",
-        Path = nil
-    },
-    {
-        Name = "New Stalker (useless kinda)",
-        GetObject = "https://create.roblox.com/store/asset/135569549878961/Stalker-Forsaken",
-        ModelName = "Stalker",
-        Path = nil
-    },
-    {
-        Name = "Jeff The Killer",
-        GetObject = "https://create.roblox.com/store/asset/13040125601/Jeff-the-Killer-Doors",
-        ModelName = "JeffKiller",
-        Path = nil
-    },
-    --https://create.roblox.com/store/asset/8114157416/R6-Dummy-Template
-    {
-        Name = "R6 Template",
-        GetObject = "https://create.roblox.com/store/asset/8114157416/R6-Dummy-Template",
-        ModelName = "R6Template",
-        Path = nil
+        Name = "Doombringer",
+        GetObject = "131045254592977",
+        ModelName = "Doombringer",
+        Path = "Real Model.DoomBringer"
     },
 }
 
@@ -1751,7 +1708,7 @@ if #customNames > 0 then
                 if existingAsset then
                     applyMorph(existingAsset, data.Name, nil, existingAsset, 1)
                 else
-                    local assetId = tonumber(string.match(tostring(data.GetObject), "%d+"))
+                    local assetId = tonumber(data.GetObject)
                     if assetId then
                         local success, loadedAsset = pcall(function()
                             return game:GetObjects("rbxassetid://" .. tostring(assetId))[1]
@@ -1759,6 +1716,8 @@ if #customNames > 0 then
                         
                         if success and loadedAsset then
                             local finalModel = loadedAsset
+                            
+                            -- UPDATE HERE: This checks your multi-level path (e.g., "Real Model.DoomBringer")
                             if data.Path then
                                 for _, partName in ipairs(string.split(data.Path, ".")) do
                                     if finalModel then
@@ -1780,16 +1739,17 @@ if #customNames > 0 then
                             
                             applyMorph(finalModel, data.Name, nil, finalModel, 1)
                         else
-                            Rayfield:Notify({Title = "Error", Content = "Failed to load via GetObjects for ID: " .. tostring(assetId), Duration = 2})
+                            Rayfield:Notify({Title = "Error", Content = "Failed to load asset ID: " .. tostring(assetId), Duration = 2})
                         end
                     else
-                        Rayfield:Notify({Title = "Error", Content = "Invalid GetObject format!", Duration = 2})
+                        Rayfield:Notify({Title = "Error", Content = "Invalid Asset ID format!", Duration = 2})
                     end
                 end
             end
         end
     })
 end
+
 --================================================--
 -- KILLERS SECTION
 --================================================--
